@@ -1,21 +1,31 @@
 <template>
-  <h1>Jurusan</h1>
-  <table>
-    <tr class="">
-      <th>No</th>
-      <th>Nama</th>
-    </tr>
-    <tr v-for="(data, index) in allJurusan">
-      <td>{{ index + 1 }}</td>
-      <td>{{ data.email }}</td>
-    </tr>
-  </table>
-  <br />
-  <form @submit.prevent="createJurusan(payload)">
-    <input placeholder="email" type="email" v-model="payload.email" />
-    <input placeholder="password" type="password" v-model="payload.password" />
-    <button type="submit">Tambah Data</button>
-  </form>
+  <div>
+    <h1>Jurusan</h1>
+
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Nama</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr v-for="(data, index) in allJurusan" :key="index">
+          <td>{{ index + 1 }}</td>
+          <td>{{ data.email }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <br />
+
+    <form @submit.prevent="handleSubmit">
+      <input placeholder="email" type="email" v-model="payload.email" />
+      <input placeholder="password" type="password" v-model="payload.password" />
+      <button type="submit">Tambah Data</button>
+    </form>
+  </div>
 </template>
 
 <script setup>
@@ -24,12 +34,20 @@ import { onMounted, reactive } from "vue";
 
 const { allJurusan, getAllJurusan, createJurusan } = JurusanService();
 
-onMounted(async () => {
-  await getAllJurusan();
-});
-
 const payload = reactive({
   email: "",
   password: "",
 });
+
+onMounted(async () => {
+  await getAllJurusan();
+});
+
+const handleSubmit = async () => {
+  await createJurusan(payload);
+  await getAllJurusan();
+
+  payload.email = "";
+  payload.password = "";
+};
 </script>
