@@ -162,7 +162,7 @@ const refreshData = () => {
     <!-- TABLE -->
     <table class="w-full text-sm">
       <thead>
-        <tr v-for="item in filteredSesi" :key="item.id">
+        <tr class="bg-blue-200 text-left">
           <th class="p-3">NO</th>
           <th class="p-3">PERTEMUAN</th>
           <th class="p-3">TANGGAL</th>
@@ -174,7 +174,7 @@ const refreshData = () => {
       </thead>
 
       <tbody>
-        <tr class="border-t">
+        <tr v-for="item in filteredSesi" :key="item.id">
           <td class="p-3">1</td>
           <td class="p-3">PERTEMUAN 1</td>
           <td class="p-3">12 Feb 2025</td>
