@@ -1,8 +1,13 @@
 <script setup>
 import adminLayout from "./adminLayout.vue";
-import { reactive, ref } from "vue";
+import { reactive, ref, computed } from "vue"; // Perbaikan: Gabungkan import computed di sini
 import { Save, RefreshCw, Trash2, Pencil } from "lucide-vue-next";
-import { computed } from "vue";
+
+// Perbaikan: Deklarasikan state filter yang kurang agar tidak undefined
+const searchSesi = ref("");
+const filterMataKuliah = ref("");
+const filterKelas = ref("");
+const filterTanggal = ref("");
 
 const form = reactive({
   mata_kuliah: "",
@@ -52,6 +57,11 @@ const filteredSesi = computed(() => {
     return cocokSearch && cocokMatkul && cocokKelas && cocokTanggal;
   });
 });
+
+// Perbaikan: Tambahkan fungsi simpanJadwal agar tidak crash saat form di-submit
+const simpanJadwal = () => {
+  console.log("Data disimpan:", form);
+};
 
 const refreshData = () => {
   searchSesi.value = "";
@@ -125,88 +135,85 @@ const refreshData = () => {
     </div>
 
     <div class="bg-white rounded-xl shadow-md p-5 mt-6">
-    <h2 class="text-2xl font-bold mb-4">DAFTAR SESI</h2>
+      <h2 class="text-2xl font-bold mb-4">DAFTAR SESI</h2>
 
-    <input
-  v-model="searchSesi"
-  type="text"
-  placeholder="Cari mata kuliah, kelas, atau dosen..."
-  class="flex-1 border rounded-lg px-4 py-2"
-/>
+      <div class="flex flex-wrap gap-3 mb-4"> <!-- Wrapper opsional untuk merapikan layout baris input filter -->
+        <input
+          v-model="searchSesi"
+          type="text"
+          placeholder="Cari mata kuliah, kelas, atau dosen..."
+          class="flex-1 border rounded-lg px-4 py-2"
+        />
 
-<select v-model="filterMataKuliah" class="border rounded-lg px-4 py-2 w-52">
-  <option value="">Semua Mata Kuliah</option>
-  <option value="Pemrograman Web">Pemrograman Web</option>
-</select>
+        <select v-model="filterMataKuliah" class="border rounded-lg px-4 py-2 w-52">
+          <option value="">Semua Mata Kuliah</option>
+          <option value="Pemrograman Web">Pemrograman Web</option>
+        </select>
 
-<select v-model="filterKelas" class="border rounded-lg px-4 py-2 w-40">
-  <option value="">Semua Kelas</option>
-  <option value="TI-4A">TI-4A</option>
-</select>
+        <select v-model="filterKelas" class="border rounded-lg px-4 py-2 w-40">
+          <option value="">Semua Kelas</option>
+          <option value="TI-4A">TI-4A</option>
+        </select>
 
-<input
-  v-model="filterTanggal"
-  type="date"
-  class="border rounded-lg px-4 py-2"
-/>
+        <input
+          v-model="filterTanggal"
+          type="date"
+          class="border rounded-lg px-4 py-2"
+        />
 
-<button
-  @click="refreshData"
-  type="button"
-  class="flex items-center gap-2 border rounded-lg px-4 py-2 hover:bg-gray-100"
->
-  <RefreshCw :size="16" />
-  Refresh
-</button>
+        <button
+          @click="refreshData"
+          type="button"
+          class="flex items-center gap-2 border rounded-lg px-4 py-2 hover:bg-gray-100"
+        >
+          <RefreshCw :size="16" />
+          Refresh
+        </button>
+      </div>
 
-    <!-- TABLE -->
-    <table class="w-full text-sm">
-      <thead>
-        <tr class="bg-blue-200 text-left">
-          <th class="p-3">NO</th>
-          <th class="p-3">PERTEMUAN</th>
-          <th class="p-3">TANGGAL</th>
-          <th class="p-3">HARI</th>
-          <th class="p-3">JAM</th>
-          <th class="p-3">STATUS</th>
-          <th class="p-3 text-center">AKSI</th>
-        </tr>
-      </thead>
+      <!-- TABLE -->
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-blue-200 text-left">
+            <th class="p-3">NO</th>
+            <th class="p-3">PERTEMUAN</th>
+            <th class="p-3">TANGGAL</th>
+            <th class="p-3">HARI</th>
+            <th class="p-3">JAM</th>
+            <th class="p-3">STATUS</th>
+            <th class="p-3 text-center">AKSI</th>
+          </tr>
+        </thead>
 
-      <tbody>
-        <tr v-for="item in filteredSesi" :key="item.id">
-          <td class="p-3">1</td>
-          <td class="p-3">PERTEMUAN 1</td>
-          <td class="p-3">12 Feb 2025</td>
-          <td class="p-3">Selasa</td>
-          <td class="p-3">08:13 - 13:30</td>
+        <tbody>
+          <!-- Perbaikan: Mengubah data di dalam row agar dinamis sesuai item dari v-for -->
+          <tr v-for="(item, index) in filteredSesi" :key="item.id" class="border-b">
+            <td class="p-3">{{ index + 1 }}</td>
+            <td class="p-3">{{ item.pertemuan }}</td>
+            <td class="p-3">{{ item.tanggal }}</td>
+            <td class="p-3">{{ item.hari }}</td>
+            <td class="p-3">{{ item.jam }}</td>
 
-          <td class="p-3">
-            <span
-              class="bg-green-100 text-green-700 px-4 py-1 rounded-full text-xs font-semibold"
-            >
-              Terjadwal
-            </span>
-          </td>
+            <td class="p-3">
+              <span class="bg-green-100 text-green-700 px-4 py-1 rounded-full text-xs font-semibold">
+                {{ item.status }}
+              </span>
+            </td>
 
-          <td class="p-3">
-            <div class="flex justify-center gap-3">
-              <button
-                class="bg-gray-200 hover:bg-gray-300 p-2 rounded-lg"
-              >
-                <Trash2 class="text-red-500" :size="18" />
-              </button>
+            <td class="p-3">
+              <div class="flex justify-center gap-3">
+                <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-lg">
+                  <Trash2 class="text-red-500" :size="18" />
+                </button>
 
-              <button
-                class="bg-gray-200 hover:bg-gray-300 p-2 rounded-lg"
-              >
-                <Pencil class="text-yellow-500" :size="18" />
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+                <button class="bg-gray-200 hover:bg-gray-300 p-2 rounded-lg">
+                  <Pencil class="text-yellow-500" :size="18" />
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </adminLayout>
 </template>
