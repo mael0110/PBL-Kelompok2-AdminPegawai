@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "./axios";
 import { ref } from "vue";
 
 export function employeesService() {
@@ -10,7 +10,7 @@ export function employeesService() {
     const token = localStorage.getItem("token");
 
     const res = await axios.get(
-      `https://api-pegawai-4a.akufarish.my.id:1234/api/employees?page=${page}`,
+      `/employees?page=${page}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -30,7 +30,7 @@ export function employeesService() {
     const token = localStorage.getItem("token");
 
     const res = await axios.post(
-      "https://api-pegawai-4a.akufarish.my.id:1234/api/employees",
+      "/employees",
       payload,
       {
         headers: {
@@ -53,7 +53,7 @@ export function employeesService() {
   const token = localStorage.getItem("token");
 
   const res = await axios.get(
-    `https://api-pegawai-4a.akufarish.my.id:1234/api/employees/${id}`,
+    `/employees/${id}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -68,7 +68,7 @@ async function updateEmployee(id, payload) {
   const token = localStorage.getItem("token");
 
   const res = await axios.put(
-    `https://api-pegawai-4a.akufarish.my.id:1234/api/employees/${id}`,
+    `/employees/${id}`,
     payload,
     {
       headers: {
@@ -85,7 +85,7 @@ async function deleteEmployee(id) {
     const token = localStorage.getItem("token");
 
     const res = await axios.delete(
-      `https://api-pegawai-4a.akufarish.my.id:1234/api/employees/${id}`,
+      `/employees/${id}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -100,6 +100,25 @@ async function deleteEmployee(id) {
     throw error;
   }
 }
+  async function getEmployeeCount() {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get(
+      "/employees/info/count",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return res.data.data.total_employee;
+  } catch (error) {
+    console.log("Gagal ambil employee count:", error.response?.data || error);
+    return 0;
+  }
+}
 
   return {
     employees,
@@ -109,5 +128,6 @@ async function deleteEmployee(id) {
     getEmployeeById,
     updateEmployee,
     deleteEmployee,
+    getEmployeeCount,
   };
 }

@@ -1,12 +1,27 @@
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router"; // Perbaikan: Import useRouter
 import logo from "../assets/logo.png";
 import {Bell, LogOut, Menu, TriangleAlert, LayoutDashboard, User, CircleCheck, MonitorCheck, CalendarDays} from "lucide-vue-next";
+import { useRouter } from "vue-router";
+import { authService } from "../services/auth";
 
 const showSidebar = ref(true);
 const router = useRouter();
 const showLogoutModal = ref(false);
+const { logout } = authService();
+
+const handleLogout = async () => {
+  try {
+    await logout();
+
+    router.push("/login");
+  } catch (error) {
+    console.log("Gagal logout:", error.response?.data || error);
+
+    localStorage.removeItem("token");
+    router.push("/login");
+  }
+};
 
 const bukaLogoutModal = () => {
   showLogoutModal.value = true;
@@ -16,11 +31,6 @@ const tutupLogoutModal = () => {
   showLogoutModal.value = false;
 };
 
-const logout = () => {
-  localStorage.removeItem("token");
-  showLogoutModal.value = false;
-  router.push("/");
-};
 </script>
 
 <template>
@@ -79,7 +89,7 @@ const logout = () => {
     </div>
 
     <!-- Modal (Dipindah ke luar aside agar tetap tampil saat sidebar ditutup) -->
-    <div v-if="showLogoutModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div v-if="showLogoutModal" class="fixed inset-0 bg-black/50  flex items-center justify-center z-50">
       <div class="bg-white w-[420px] rounded-xl border-2 border-red-400 p-8 text-center shadow-2xl">
         <div class="flex justify-center mb-5">
           <TriangleAlert class="text-red-500" :size="80" stroke-width="2.5" />
@@ -88,7 +98,7 @@ const logout = () => {
         <h2 class="text-2xl font-bold mb-6">Yakin Ingin Keluar?</h2>
 
         <div class="flex justify-center gap-3">
-          <button @click="logout" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg text-sm transition-colors">
+          <button @click="handleLogout" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg text-sm transition-colors">
             Yakin
           </button>
           <button @click="tutupLogoutModal" class="bg-gray-700 hover:bg-gray-800 text-white px-5 py-2 rounded-lg text-sm transition-colors">

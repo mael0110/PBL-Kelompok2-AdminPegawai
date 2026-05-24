@@ -10,6 +10,7 @@ import editPegawai from "../pages/editPegawai.vue";
 import EditPegawai from "../pages/editPegawai.vue";
 import EditVerifikasi from "../pages/editVerifikasi.vue";
 import Penjadwalan from "../pages/penjadwalan.vue";
+import editPenjadwalan from "../pages/editPenjadwalan.vue";
 
 const routes = [
   { path: "/", redirect: "/login" },
@@ -22,6 +23,7 @@ const routes = [
   {path: "/pegawai/edit/:id", name: "edit-pegawai", component: EditPegawai},
   {path: "/verifikasi/edit/:id", name: "edit-verifikasi", component: EditVerifikasi},
   {path: "/penjadwalan", name: "penjadwalan", component: Penjadwalan},
+  {path: "/penjadwalan/edit/:id", name: "edit-penjadwalan", component: editPenjadwalan},
 ];
 
 const router = createRouter({

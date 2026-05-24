@@ -1,26 +1,58 @@
 <script setup>
 import adminLayout from "./adminLayout.vue";
-import { ref } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { Save } from "lucide-vue-next";
 import { verifikasiService } from "../services/verifikasi";
 
 const router = useRouter();
 const route = useRoute();
 
-const { updateVerifikasi } = verifikasiService();
+const { updateVerifikasi, getVerifikasiById } = verifikasiService();
 
 const status = ref("approved");
+
+const form = reactive({
+  employee_name: "",
+  nip: "",
+  nik: "",
+  field_name: "",
+  old_value: "",
+  new_value: "",
+  status: "",
+});
+
+onMounted(async () => {
+  const id = route.params.id;
+
+  const data = await getVerifikasiById(id);
+
+  if (data) {
+    form.employee_name = data.employee?.employee_name || "";
+    form.nip = data.employee?.nip || "";
+    form.nik = data.employee?.nik || "";
+
+    form.field_name = data.field_name || "";
+    form.old_value = data.old_value || "";
+    form.new_value = data.new_value || "";
+    form.status = data.status || "";
+
+    status.value = data.status || "pending";
+  }
+});
 
 const simpanVerifikasi = async () => {
   try {
     const id = route.params.id;
 
-    await updateVerifikasi(id, status.value);
+    await updateVerifikasi(id, form.status);
 
     alert("Status verifikasi berhasil diubah!");
+
     router.push("/verifikasi");
   } catch (error) {
     console.log(error.response?.data || error);
+
     alert("Gagal mengubah status!");
   }
 };
@@ -32,7 +64,6 @@ const batal = () => {
 
 <template>
   <adminLayout>
-    <div class="bg-blue-100 p-5 rounded-2xl shadow-inner">
       <p class="text-sm mb-2">
         <RouterLink to="/verifikasi" class="text-blue-700 hover:underline">
           Verifikasi
@@ -40,10 +71,10 @@ const batal = () => {
         <span class="mx-2 text-gray-400">&gt;</span> Edit Verifikasi
       </p>
 
-      <h1 class="text-2xl font-bold mb-4">EDIT VERIFIKASI</h1>
+      <h1 class="text-2xl font-bold mb-3">EDIT VERIFIKASI</h1>
 
       <div class="space-y-4">
-        <div class="bg-white rounded-xl overflow-hidden">
+        <div class="card-dashboard bg-white rounded-xl overflow-hidden">
           <div class="bg-blue-200 px-4 py-2 font-bold">
             DATA PEGAWAI
           </div>
@@ -55,7 +86,7 @@ const batal = () => {
                 v-model="form.employee_name"
                 type="text"
                 disabled
-                class="w-full border rounded-lg px-3 py-2 bg-gray-100"
+                class="w-full border rounded-lg px-3 py-2 bg-gray-50"
               />
             </div>
 
@@ -64,7 +95,7 @@ const batal = () => {
               <input
                 v-model="form.nip"
                 type="text"
-                class="w-full border rounded-lg px-3 py-2 bg-gray-100"
+                class="w-full border rounded-lg px-3 py-2 bg-gray-50"
               />
             </div>
 
@@ -73,13 +104,13 @@ const batal = () => {
               <input
                 v-model="form.nik"
                 type="text"
-                class="w-full border rounded-lg px-3 py-2 bg-gray-100"
+                class="w-full border rounded-lg px-3 py-2 bg-gray-50"
               />
             </div>
           </div>
         </div>
 
-        <div class="bg-white rounded-xl overflow-hidden">
+        <div class="card-dashboard bg-white rounded-xl overflow-hidden">
           <div class="bg-blue-200 px-4 py-2 font-bold">
             FORM PERUBAHAN
           </div>
@@ -130,8 +161,9 @@ const batal = () => {
           </div>
         </div>
 
-        <div class="bg-white rounded-xl overflow-hidden">
-          <div class="bg-blue-200 px-4 py-2 font-bold">
+        <div class="flex justify-between items-end mt-6">
+        <div class="card-dashboard bg-white rounded-xl  w-[300px]">
+          <div class="bg-blue-200 px-4 py-2 font-bold rounded-tl-xl rounded-tr-xl">
             STATUS
           </div>
 
@@ -152,20 +184,18 @@ const batal = () => {
           <button
             type="button"
             @click="batal"
-            class="bg-red-500 hover:bg-red-600 text-white px-8 py-2 rounded-lg font-semibold"
-          >
+            class="bg-red-500 hover:bg-red-600 text-white px-8 py-2 rounded-lg font-semibold">
             BATAL
           </button>
 
           <button
             type="button"
             @click="simpanVerifikasi"
-            class="bg-green-500 hover:bg-green-600 text-white px-8 py-2 rounded-lg font-semibold"
-          >
-            SIMPAN
+            class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-semibold transition">
+            <Save/>SIMPAN
           </button>
         </div>
+        </div>
       </div>
-    </div>
   </adminLayout>
 </template>

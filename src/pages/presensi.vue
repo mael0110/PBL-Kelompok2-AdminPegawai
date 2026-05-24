@@ -1,32 +1,17 @@
 <script setup>
 import adminLayout from './adminLayout.vue';
-import { ref, computed } from "vue";
-import {UserCheck, UserRoundPlus, UserX, Cross, Search} from "lucide-vue-next";
+import { ref, computed, onMounted } from "vue";
+import {UserCheck, UserRoundPlus, UserX, Cross, Search, Filter} from "lucide-vue-next";
+import {presensiService} from "../services/presensi";
 
+const { presensi, getPresensi } = presensiService();
 const search = ref("");
 const filterStatus = ref("");
 const filterTanggal = ref("");
 
-const presensi = ref([
-    {
-        id: 1,
-        employee_name: "Budi Sudarsono",
-        nip: "1023xxx",
-        tanggal: "2025-01-15",
-        jam_masuk: "08:00",
-        jam_keluar: "17:00",
-        status: "hadir",  
-    },
-    {
-        id: 2,
-        employee_name: "Rara Setiawati",
-        nip: "1024xxx",
-        tanggal: "2025-01-15",
-        jam_masuk: "-",
-        jam_keluar: "-",
-        status: "izin"
-    },
-]);
+onMounted(async () => {
+  await getPresensi("2025-05-12", "ISI_SESI_ID");
+});
 
 const filteredPresensi = computed(() => {
   return presensi.value.filter((item) => {
@@ -50,80 +35,89 @@ const filteredPresensi = computed(() => {
 <template>
 <adminLayout>
     <h1 class="text-2xl font-bold">PRESENSI</h1>
-    <p class="flex gap-4 mb-6">Data Kehadiran Pegawai</p>
+    <p class="flex text-sm gap-4 mb-6">Data Kehadiran Pegawai</p>
 
     <div >
         <div class="flex gap-4 mb-6 ">
-            <div class="relative flex-1">
+            <div class="relative flex-1 text-sm">
             <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400" :size="18"/>
             <input
             v-model="search"
             type="text"
             placeholder="Cari pegawai berdasarkan nama, NIP, atau NIK"
-            class="w-full border border-blue-900 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-200"/>
+            class="w-full border border-blue-900 text-sm rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-200"/>
             </div> 
 
+            <div class="relative">
+            <Filter class="absolute left-3 top-1/2 -translate-y-1/2 text-white" :size="16"/>
             <select
             v-model="filterStatus"
-            class="bg-transparent border border-blue-900 text-blue-900 rounded-xl px-4 py-2 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-200">
+            class="bg-blue-900 border border-blue-900 text-sm text-white pl-10 pr-8 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-200">
                 <option value="">Filter Status</option>
                 <option value="hadir">Hadir</option>
                 <option value="izin">Izin</option>
                 <option value="tidak-hadir">Tidak Hadir</option>
             </select>
-
+            </div>
+            
+            <div class="relative">
             <input
             v-model="filterTanggal"
             type="date"
-            class="bg-transparent border border-blue-900 text-blue-900 rounded-xl px-4 py-2 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-200"/>
+            class="bg-blue-900 border border-blue-900 text-sm text-white pl-10 py-2 rounded-lg appearance-none [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-200"/>
+            </div>
         </div>
 
         <div class="grid grid-cols-4 gap-4 mb-6">
-            <div class="bg-green-100 rounded-2xl p-5 flex items-center gap-4">
-            <UserCheck class="text-green-500" :size="46" />
-            <div>
-                <h3 class="text-2xl font-bold">95</h3>
-                <p class="text-lg font-semibold">Hadir</p>
-                <p class="text-gray-700">Total Hadir</p>
-            </div>
+            <div class="card-dashboard bg-green-100 rounded-xl shadow-md px-4 py-3 h-[100px] flex flex-col justify-center shadow border border-green-100">
+                <p class="text-center text-[16px] font-bold mb-2">HADIR</p>
+                <div class="relative flex items-center justify-center mb-2">
+                    <UserCheck class="text-green-500 absolute left-2" :size="46"/>
+                    <h2 class="text-3xl font-bold leading-none">1</h2>
+                </div>
+                <p class="text-center text-gray-700 text-[14px]">Total Hadir</p>
             </div>
 
-            <div class="bg-yellow-100 rounded-2xl p-5 flex items-center gap-4">
+            <div class="card-dashboard bg-yellow-100 rounded-xl shadow-md px-4 py-3 h-[100px] flex flex-col justify-center shadow border border-yellow-100">
+                <p class="text-center text-[16px] font-bold mb-2">IZIN</p>
+                <div class="relative flex items-center justify-center mb-2">
+                    <UserRoundPlus class="text-yellow-500 absolute left-2" :size="46" />
+                    <h2 class="text-3xl font-bold leading-none">1</h2>
+                </div>
+                <p class="text-center text-gray-700 text-[14px]">Total Izin</p>
             <UserRoundPlus class="text-yellow-500" :size="46" />
-            <div>
-                <h3 class="text-2xl font-bold">18</h3>
-                <p class="text-lg font-semibold">Izin</p>
-                <p class="text-gray-700">Total Izin</p>
-            </div>
             </div>
 
-            <div class="bg-red-100 rounded-2xl p-5 flex items-center gap-4">
-            <UserX class="text-red-500" :size="46" />
-            <div>
-                <h3 class="text-2xl font-bold">7</h3>
-                <p class="text-lg font-semibold">Alpha</p>
-                <p class="text-gray-700">Total Alpha</p>
-            </div>
+            <div class="card-dashboard bg-red-100 rounded-xl shadow-md px-4 py-3 h-[100px] flex flex-col justify-center shadow border border-red-100">
+                <p class="text-center text-[16px] font-bold mb-2">ALPA</p>
+                <div class="relative flex items-center justify-center mb-2">
+                    <UserRoundPlus class="text-red-500 absolute left-2" :size="46" />
+                    <h2 class="text-3xl font-bold leading-none">1</h2>
+                </div>
+                <p class="text-center text-gray-700 text-[14px]">Total Alpa</p>
+            <UserRoundPlus class="text-red-500" :size="46" />
             </div>
 
-            <div class="bg-blue-100 rounded-2xl p-5 flex items-center gap-4">
-            <Cross class="text-blue-700 fill-current" :size="46" />
-            <div>
-                <h3 class="text-2xl font-bold">5</h3>
-                <p class="text-lg font-semibold">Sakit</p>
-                <p class="text-gray-700">Total Sakit</p>
+            <div class="card-dashboard bg-blue-100 rounded-xl shadow-md px-4 py-3 h-[100px] flex flex-col justify-center shadow border border-blue-100">
+                <p class="text-center text-[16px] font-bold mb-2">SAKIT</p>
+                <div class="relative flex items-center justify-center mb-2">
+                    <UserRoundPlus class="text-blue-500 absolute left-2" :size="46" />
+                    <h2 class="text-3xl font-bold leading-none">1</h2>
+                </div>
+                <p class="text-center text-gray-700 text-[14px]">Total Sakit</p>
+            <UserRoundPlus class="text-blue-500" :size="46" />
             </div>
-            </div>
+
         </div>
 
-        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="bg-white rounded-xl shadow-md px-5">
             <div class="px-2 py-3">
-                <h2 class="font-bold text-xl">DAFTAR PRESENSI</h2>
+                <h2 class="font-bold text-sm">DAFTAR PRESENSI</h2>
             </div>
 
-            <table class="w-full text-sm">
+            <table class="table-dashboard w-full text-sm">
                 <thead>
-                    <tr class="bg-blue-200 font-semibold">
+                    <tr class="bg-blue-200 font-semibold border-b border-gray-200">
                         <th class="p-3 text-letf">NO</th>
                         <th class="p-3 text-left">NAMA PEGAWAI</th>
                         <th class="p-3 text-left">NIP</th>
@@ -134,15 +128,15 @@ const filteredPresensi = computed(() => {
                 </thead>
 
                 <tbody>
-                    <tr v-for="(item, index) in filteredPresensi" :key="item.id" class="hover:bg-gray-50">
-                        <td class="p-3 font-semibold">{{ index + 1 }}</td>
+                    <tr v-for="(item, index) in filteredPresensi" :key="item.id" class="odd:bg-gray-50 even:bg-white font-semibold border-b border-gray-200">
+                        <td class="p-3 text-semibold text-center">{{ index + 1 }}</td>
                         <td class="p-3 text-semibold">{{ item.employee_name}}</td>
                         <td class="p-3 text-semibold">{{ item.nip}}</td>
                         <td class="p-3 text-semibold">{{ item.jam_masuk}}</td>
                         <td class="p-3 text-semibold">{{ item.jam_keluar}}</td>
-                        <td class="p-3">
+                        <td class="p-3 font-semibold text-left">
                             <span
-                            class="px-3 py-1 rounded-full text=xc font=bold"
+                            class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold"
                             :class="
                                 item.status == 'hadir'
                                 ? 'bg-green-100 text-green-700'
@@ -160,3 +154,35 @@ const filteredPresensi = computed(() => {
     </div>
 </adminLayout>
 </template>
+
+<style scoped>
+input[type="date"] {
+  position: relative;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  position: absolute;
+  left: 10px;
+  cursor: pointer;
+}
+
+
+/* OPTION DEFAULT */
+select option {
+  background: white;
+  color: black;
+}
+
+/* OPTION SAAT HOVER */
+select option:hover {
+  background: #2563eb;
+  color: white;
+}
+
+/* OPTION SAAT DIPILIH */
+select option:checked {
+  background: #2563eb;
+  color: white;
+}
+</style>

@@ -132,7 +132,7 @@ const batal = () => {
             type="text"
             required
             placeholder="Masukkan nama lengkap"
-            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            class="w-full border bg-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
           />
         </div>
 
@@ -144,7 +144,7 @@ const batal = () => {
             type="text"
             required
             placeholder="Contoh: 19XXXXXXXXXXXX"
-            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            class="w-full border bg-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
           />
         </div>
 
@@ -156,7 +156,7 @@ const batal = () => {
             type="text"
             required
             placeholder="Masukkan 16 digit NIK"
-            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            class="w-full border bg-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
           />
         </div>
 
@@ -168,7 +168,7 @@ const batal = () => {
             id="gender"
             v-model="form.gender"
             required
-            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            class="w-full border bg-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
           >
             <option value="" disabled>Pilih Jenis Kelamin</option>
             <option value="male">Laki-laki</option>
@@ -187,7 +187,7 @@ const batal = () => {
                 type="text"
                 required
                 placeholder="Tempat lahir"
-                class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                class="w-full bg-white border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
 
@@ -198,7 +198,7 @@ const batal = () => {
                 v-model="form.birth_date"
                 type="date"
                 required
-                class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+                class="w-full bg-white border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
           </div>
@@ -214,7 +214,7 @@ const batal = () => {
             type="tel"
             required
             placeholder="08XXXXXXXXXX"
-            class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            class="w-full bg-white border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
           />
         </div>
 
@@ -228,13 +228,13 @@ const batal = () => {
             rows="3"
             required
             placeholder="Masukkan alamat lengkap"
-            class="w-full border rounded-lg px-3 py-2 mb-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            class="w-full bg-white border rounded-lg px-3 py-2 mb-2 focus:ring-2 focus:ring-blue-500 outline-none"
           ></textarea>
           <div>
 
           <div>
             <label class="block text-sm font-semibold mb-1">Provinsi</label>
-            <select v-model="form.province_code" @change="handleProvinceChange" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+            <select v-model="form.province_code" @change="handleProvinceChange" class="w-full border bg-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
               <option value="">Pilih Provinsi</option>
               <option v-for="item in provinces" :key="item.id" :value="item.code">
                 {{ item.name }}
@@ -244,7 +244,7 @@ const batal = () => {
 
           <div>
             <label class="block text-sm font-semibold mb-1">Kabupaten/Kota</label>
-            <select v-model="form.city_code" @change="handleCityChange" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+            <select v-model="form.city_code" @change="handleCityChange" class="w-full border bg-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
               <option value="">Pilih Kota</option>
               <option v-for="item in cities" :key="item.id" :value="item.code">
                 {{ item.name }}
@@ -254,7 +254,7 @@ const batal = () => {
 
           <div>
             <label class="block text-sm font-semibold mb-1">Kecamatan</label>
-            <select v-model="form.district_code" @change="handleDistrictChange" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+            <select v-model="form.district_code" @change="handleDistrictChange" class="w-full border bg-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
               <option value="">Pilih Kecamatan</option>
               <option v-for="item in districts" :key="item.id" :value="item.code">
                 {{ item.name }}
@@ -264,7 +264,7 @@ const batal = () => {
 
           <div>
             <label class="block text-sm font-semibold mb-1">Desa/Kelurahan</label>
-            <select v-model="form.village_code" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+            <select v-model="form.village_code" class="w-full border bg-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
               <option value="">Pilih Desa</option>
               <option v-for="item in villages" :key="item.id" :value="item.code">
                 {{ item.name }}
@@ -274,13 +274,18 @@ const batal = () => {
           </div>
         </div>
 
-        <div class="flex gap-4 pt-4 col-span-2">
-          <button type="submit" class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-semibold transition">
-          <Save/>SIMPAN
+        <div class="flex justify-end gap-4 col-span-2">
+          <button
+            type="button"
+            @click="batal"
+            class="bg-red-500 hover:bg-red-600 text-white px-8 py-2 rounded-lg font-semibold">
+            BATAL
           </button>
 
-          <button type="button" @click="batal" class="bg-gray-500 hover:bg-gray-600 text-white px-8 py-2 rounded-lg font-semibold transition">
-            BATAL
+          <button
+            type="submit"
+            class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-semibold transition">
+            <Save/>SIMPAN
           </button>
         </div>
       </form>

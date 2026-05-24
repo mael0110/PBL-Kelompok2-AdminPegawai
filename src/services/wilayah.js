@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "./axios";
 import { ref } from "vue";
 
 export function wilayahService() {
@@ -19,7 +19,7 @@ export function wilayahService() {
       do {
 
         const res = await axios.get(
-          `https://api-pegawai-4a.akufarish.my.id:1234/api/countries?page=${currentPage}`
+          `/countries?page=${currentPage}`
         );
 
         allCountries = [
@@ -51,7 +51,7 @@ export function wilayahService() {
       do {
 
         const res = await axios.get(
-          `https://api-pegawai-4a.akufarish.my.id:1234/api/provinces?page=${currentPage}`
+          `/provinces?page=${currentPage}`
         );
 
         allProvinces = [
@@ -77,7 +77,7 @@ export function wilayahService() {
     try {
 
       const res = await axios.get(
-        `https://api-pegawai-4a.akufarish.my.id:1234/api/cities/${provinceCode}`
+        `/cities/${provinceCode}`
       );
 
       cities.value = res.data.data;
@@ -93,7 +93,7 @@ export function wilayahService() {
     try {
 
       const res = await axios.get(
-        `https://api-pegawai-4a.akufarish.my.id:1234/api/districts/${cityCode}`
+        `/districts/${cityCode}`
       );
 
       districts.value = res.data.data;
@@ -109,7 +109,7 @@ export function wilayahService() {
     try {
 
       const res = await axios.get(
-        `https://api-pegawai-4a.akufarish.my.id:1234/api/villages/${districtCode}`
+        `/villages/${districtCode}`
       );
 
       villages.value = res.data.data;

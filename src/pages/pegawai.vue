@@ -59,6 +59,13 @@ const filteredPegawai = computed(() => {
     });
 });
 
+const namaField = (field) => {
+  const map = {
+    female: "Perempuan",
+    male: "Laki-laki"
+  };
+  return map[field?.toLowerCase()] || field;
+};
 </script>
 
 <template>
@@ -79,17 +86,17 @@ const filteredPegawai = computed(() => {
 
         <button 
         @click="router.push('/pegawai/tambah')"
-        class="bg-blue-900 hover:bg-blue-950 text-white px-8 py-2 rounded-lg font-semibold transition">
+        class="bg-blue-900 text-sm hover:bg-blue-950 text-white px-8 py-2 rounded-lg font-semibold transition">
           TAMBAH
         </button>
         </div>
         
-        <div class="bg-white rounded-xl shadow-md overflow-hidden">
-        <div class="px-2 py-3">
-          <h2 class="font-bold text-xl">DAFTAR PEGAWAI</h2>
+        <div class="bg-white rounded-xl shadow-md px-5">
+        <div class="px-5 py-3">
+          <h4 class="font-bold text-xl">DAFTAR PEGAWAI</h4>
         </div>
 
-        <table class="w-full text-sm">
+        <table class="w-full table-dashboard text-sm border-b border-gray-200">
           <thead>
             <tr class="bg-blue-200 font-semibold">
               <th class="p-2 text-left">NO</th>
@@ -105,12 +112,12 @@ const filteredPegawai = computed(() => {
           </thead>
 
           <tbody>
-            <tr v-for="(item, index) in filteredPegawai" :key="item.id" class="hover:bg-gray-50">
+            <tr v-for="(item, index) in filteredPegawai" :key="item.id" class="hover:bg-gray-50 border-b border-gray-200">
               <td class="p-2 font-semibold">{{ index + 1 }}</td>
               <td class="p-2 font-semibold">{{ item.employee_name }}</td>
               <td class="p-2 font-semibold">{{ item.nip }}</td>
               <td class="p-2 font-semibold">{{ item.nik }}</td>
-              <td class="p-2 font-semibold">{{ item.gender }}</td>
+              <td class="p-2 font-semibold">{{ namaField(item.gender) }}</td>
               <td class="p-2 font-semibold">{{ item.birth_place }} {{ item.birth_date }}</td>
               <td class="p-2 font-semibold">{{ item.address }}</td>
               <td class="p-2 font-semibold">{{ item.phone_number }}</td>
@@ -147,8 +154,9 @@ const filteredPegawai = computed(() => {
           <span v-html="link.label"></span>
         </button>
         </div>
-    </div>
-    <div v-if="showModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+      </div>
+
+    <div v-if="showModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div class="bg-white w-[420px] rounded-xl border-2 border-red-400 p-8 text-center shadow-2xl">
         <div class="flex justify-center mb-5">
           <TriangleAlert class="text-red-500" :size="80" stroke-width="2.5" />
