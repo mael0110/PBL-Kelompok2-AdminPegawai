@@ -10,7 +10,9 @@ const filterStatus = ref("");
 const filterTanggal = ref("");
 
 onMounted(async () => {
-  await getPresensi("2025-05-12", "ISI_SESI_ID");
+  await getPresensi({
+    id_presensi: "ISI_ID_PRESENSI",
+  });
 });
 
 const filteredPresensi = computed(() => {
@@ -19,7 +21,8 @@ const filteredPresensi = computed(() => {
 
     const cocokSearch =
       item.employee_name.toLowerCase().includes(keyword) ||
-      item.nip.toLowerCase().includes(keyword);
+      item.email.toLowerCase().includes(keyword);
+      item.detail_id?.toLowerCase().includes(keyword);
 
     const cocokStatus =
       filterStatus.value === "" || item.status === filterStatus.value;
@@ -121,20 +124,20 @@ const filteredPresensi = computed(() => {
                         <th class="p-3 text-letf">NO</th>
                         <th class="p-3 text-left">NAMA PEGAWAI</th>
                         <th class="p-3 text-left">NIP</th>
-                        <th class="p-3 text-left">JAM MASUK</th>
-                        <th class="p-3 text-left">JAM KELUAR</th>
+                        <th class="p-3 text-left">JAM MASUK-JAM KELUAR</th>
+                        <!-- <th class="p-3 text-left">JAM KELUAR</th> -->
                         <th class="p-3 text-left">STATUS</th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    <tr v-for="(item, index) in filteredPresensi" :key="item.id" class="odd:bg-gray-50 even:bg-white font-semibold border-b border-gray-200">
+                    <tr v-for="(item, index) in filteredPresensi" :key="item.detail_id" class="odd:bg-gray-50 even:bg-white font-semibold border-b border-gray-200">
                         <td class="p-3 text-semibold text-center">{{ index + 1 }}</td>
-                        <td class="p-3 text-semibold">{{ item.employee_name}}</td>
-                        <td class="p-3 text-semibold">{{ item.nip}}</td>
-                        <td class="p-3 text-semibold">{{ item.jam_masuk}}</td>
-                        <td class="p-3 text-semibold">{{ item.jam_keluar}}</td>
-                        <td class="p-3 font-semibold text-left">
+                        <td class="p-3 text-semibold">{{ item.name}}</td>
+                        <td class="p-3 text-semibold">{{ item.email}}</td>
+                        <td class="p-3 text-semibold">{{ item.detail_id}}</td>
+                        <!-- <td class="p-3 text-semibold">{{ item.detail_id}}</td> -->
+                        <!-- <td class="p-3 font-semibold text-left">
                             <span
                             class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold"
                             :class="
@@ -146,7 +149,7 @@ const filteredPresensi = computed(() => {
                             ">
                                 {{ item.status }}
                             </span>
-                        </td>
+                        </td> -->
                     </tr>
                 </tbody>
             </table>

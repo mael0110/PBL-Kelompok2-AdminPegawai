@@ -6,9 +6,15 @@ import { Save, RefreshCw, Trash2, Pencil, TriangleAlert } from "lucide-vue-next"
 import { penjadwalanService } from "../services/penjadwalan";
 
 const router = useRouter();
-const { generateSesi } = penjadwalanService();
+const { generateSesi, getCourses, getLecturers, getClasses, getProdi, getKelasByProdi, getPengampuByKelas } = penjadwalanService();
+const courses = ref([]);
+// const lecturers = ref([]);
+// const classes = ref([]);
+const prodiList = ref([]);
+const kelasList = ref([]);
+const selectedProdi = ref("");
+const pengampuList = ref([]);
 
-// Perbaikan: Deklarasikan state filter yang kurang agar tidak undefined
 const searchSesi = ref("");
 const filterMataKuliah = ref("");
 const filterKelas = ref("");
@@ -26,29 +32,9 @@ const form = reactive({
   end_time: "",
 });
 
-const pilihMatkul = () => {
-  const selected = courses.value.find(
-    (item) => item.course_code === form.course_code
-  );
-
-  if (selected) {
-    form.course_name = selected.course_name;
-  }
-};
-
-const pilihKelas = () => {
-  const selected = classes.value.find(
-    (item) => item.id === form.class_id
-  );
-
-  if (selected) {
-    form.class_name = selected.class_name;
-  }
-};
-
 const buatJadwal = async () => {
   try {
-    await generateSesi({
+    const payload = {
       pengampu_id: form.pengampu_id,
       lecturer_id: form.lecturer_id,
       class_id: form.class_id,
@@ -58,12 +44,79 @@ const buatJadwal = async () => {
       start_date: form.start_date,
       start_time: form.start_time,
       end_time: form.end_time,
-    });
+    };
+
+    console.log("Payload generate sesi:", payload);
+
+    await generateSesi(payload);
 
     alert("Berhasil generate 16 sesi kelas!");
   } catch (error) {
+    console.log("Error generate:", error.response?.data || error);
     alert("Gagal generate sesi kelas!");
   }
+};
+
+onMounted(async () => {
+  courses.value = await getCourses();
+  // lecturers.value = await getLecturers();
+  // classes.value = await getClasses();
+  prodiList.value = await getProdi();
+  // pengampuList.value = await getPengampuByKelas(form.class_id);           
+});
+
+const pilihMatkul = () => {
+  console.log("course_code dipilih:", form.course_code);
+
+  console.log("semua courses:", courses.value);
+
+  const selected = courses.value.find(
+    (item) =>
+      String(item.kode || item.code) === String(form.course_code)
+  );
+
+  console.log("selected matkul:", selected);
+
+  if (selected) {
+    form.course_code = selected.kode || selected.code;
+    form.course_name = selected.name;
+  }
+};
+
+const pilihKelas = async () => {
+  const selected = kelasList.value.find(
+    (item) => String(item.id) === String(form.class_id)
+  );
+
+  if (selected) {
+    form.class_name =
+      selected.class_name || selected.name || selected.nama_kelas || "";
+  }
+
+  form.lecturer_id = "";
+  pengampuList.value = [];
+
+  if (!form.class_id) return;
+
+  pengampuList.value = await getPengampuByKelas(form.class_id);
+};
+
+const pilihProdi = async () => {
+  form.class_id = "";
+  form.class_name = "";
+  kelasList.value = [];
+
+  if (!selectedProdi.value) return;
+
+  kelasList.value = await getKelasByProdi(selectedProdi.value);
+};
+
+const pilihPengampu = () => {
+  const selected = pengampuList.value.find(
+    (item) => String(item.pengampu_id) === String(form.pengampu_id)
+  );
+
+  form.lecturer_id = selected?.dosen?.id || "";
 };
 
 const daftarSesi = ref([
@@ -155,7 +208,7 @@ const konfirmasiHapus = () => {
           <label class="block text-sm font-semibold mb-1">Mata Kuliah</label>
           <select v-model="form.course_code" @change="pilihMatkul" class="w-full border rounded-lg px-3 py-2">
             <option value="">Pilih Mata Kuliah</option>
-            <option v-for="item in courses" :key="item.id" :value="item.course_code">{{ item.course_name }}</option>
+            <option v-for="item in courses" :key="item.id" :value="item.code || item.kode">{{ item.name }}</option>
           </select>
         </div>
 
@@ -165,10 +218,10 @@ const konfirmasiHapus = () => {
         </div>
 
         <div>
-          <label class="block text-sm font-semibold mb-1">Kelas</label>
-          <select v-model="form.class_id" @change="pilihKelas" class="w-full border rounded-lg px-3 py-2">
-            <option value="">Pilih Kelas</option>
-            <option v-for="item in classes" :key="item.id" :value="item.id">{{ item.class_name }}</option>
+          <label class="block text-sm font-semibold mb-1">Prodi</label>
+          <select v-model="selectedProdi" @change="pilihProdi" class="w-full border rounded-lg px-3 py-2">
+            <option value="">Pilih Prodi</option>
+            <option v-for="item in prodiList" :key="item.id" :value="item.name">{{ item.name }}</option>
           </select>
         </div>
 
@@ -178,10 +231,10 @@ const konfirmasiHapus = () => {
         </div>
 
         <div>
-          <label class="block text-sm font-semibold mb-1">Dosen Pengampu</label>
-          <select v-model="form.lecturer_id" class="w-full border rounded-lg px-3 py-2">
-            <option value="">Pilih Dosen</option>
-            <option v-for="item in lecturers" :key="item.id" :value="item.id">{{ item.employee_name }}</option>
+          <label class="block text-sm font-semibold mb-1">Kelas</label>
+          <select v-model="form.class_id" @change="pilihKelas" class="w-full border rounded-lg px-3 py-2">
+            <option value="">Pilih Kelas</option>
+            <option v-for="item in kelasList" :key="item.id" :value="item.id">{{ item.class_name || item.name || item.nama_kelas }}</option>
           </select>
         </div>
 
@@ -190,8 +243,16 @@ const konfirmasiHapus = () => {
           <input v-model="form.end_time" type="time" class="w-full border rounded-lg px-3 py-2"/>
         </div>
 
-        <div class="flex items-right gap-2 col-span-2 justify-end">
-          <button type="submit" class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold">
+        <div>
+          <label class="block text-sm font-semibold mb-1">Dosen Pengampu</label>
+          <select v-model="form.pengampu_id" @change="pilihPengampu" class="w-full border rounded-lg px-3 py-2">
+            <option value="">Pilih Dosen</option>
+            <option v-for="item in pengampuList" :key="item.pengampu_id" :value="item.pengampu_id">{{ item.dosen && item.dosen.name ? item.dosen.name : "Nama dosen tidak ada" }}</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-4">
+          <button type="submit" class="flex h-[40px] items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold">
             <Save :size="18" />
             Buat Jadwal
           </button>

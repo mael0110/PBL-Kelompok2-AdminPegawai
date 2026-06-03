@@ -44,7 +44,7 @@ const batal = () => {
 <template>
   <adminLayout>
     <p class="text-sm mb-2">
-      <RouterLink to="/penjadwalan" class="text-blue-700 hover:underline">
+      <RouterLink to="/penjadwalan" class="hover:underline">
         Penjadwalan
       </RouterLink>
       <span class="mx-2 text-gray-400">&gt;</span> Edit Penjadwalan

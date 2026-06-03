@@ -113,7 +113,7 @@ const batal = () => {
 <adminLayout>
     <div>
         <p class="text-sm mb-2">
-        <RouterLink to="/pegawai" class="text-blue-700 hover:underline">
+        <RouterLink to="/pegawai" class=" hover:underline">
           Pegawai
         </RouterLink>
         <span class="mx-2 text-gray-400">&gt;</span> Edit Pegawai

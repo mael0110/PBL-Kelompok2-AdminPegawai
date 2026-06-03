@@ -1,27 +1,18 @@
-import axios from "axios";
+import axios from "./axios";
 import { ref } from "vue";
 
 export function presensiService() {
   const presensi = ref([]);
-  const sesiId = ref("");
 
-  async function getPresensi(date, sesi_id) {
+  async function getPresensi(filter = {}) {
     try {
-      const token = localStorage.getItem("token");
-
-      const res = await axios.get("https://be.karlearn.site/api/presensi", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-        params: {
-          date,
-          sesi_id,
-        },
+      const res = await axios.get("https://be.karlearn.site/api/presensi/pegawai", {
+        params: filter,
       });
 
+      console.log("Response presensi:", res.data);
+
       presensi.value = res.data.data?.pegawai || [];
-      sesiId.value = res.data.data?.sesi_id || "";
 
       return res.data;
     } catch (error) {
@@ -33,7 +24,6 @@ export function presensiService() {
 
   return {
     presensi,
-    sesiId,
     getPresensi,
   };
 }

@@ -34,6 +34,8 @@ export function authService() {
         }
       );
 
+      console.log("Response logout:", res.data);
+
       localStorage.removeItem("token");
 
       return res.data;
