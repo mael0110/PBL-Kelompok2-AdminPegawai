@@ -6,7 +6,7 @@ import { Save, RefreshCw, Trash2, Pencil, TriangleAlert } from "lucide-vue-next"
 import { penjadwalanService } from "../services/penjadwalan";
 
 const router = useRouter();
-const { generateSesi, getCourses, getLecturers, getClasses, getProdi, getKelasByProdi, getPengampuByKelas } = penjadwalanService();
+const { generateSesi, getCourses, getLecturers, getClasses, getProdi, getKelasByProdi, getPengampuByKelas, getJadwal } = penjadwalanService();
 const courses = ref([]);
 // const lecturers = ref([]);
 // const classes = ref([]);
@@ -25,6 +25,7 @@ const form = reactive({
   lecturer_id: "",
   class_id: "",
   class_name: "",
+  topic: "",
   course_code: "",
   course_name: "",
   start_date: "",
@@ -39,6 +40,7 @@ const buatJadwal = async () => {
       lecturer_id: form.lecturer_id,
       class_id: form.class_id,
       class_name: form.class_name,
+      topic: form.topic,
       course_code: form.course_code,
       course_name: form.course_name,
       start_date: form.start_date,
@@ -59,10 +61,9 @@ const buatJadwal = async () => {
 
 onMounted(async () => {
   courses.value = await getCourses();
-  // lecturers.value = await getLecturers();
-  // classes.value = await getClasses();
   prodiList.value = await getProdi();
-  // pengampuList.value = await getPengampuByKelas(form.class_id);           
+  daftarSesi.value = await getJadwal();
+         
 });
 
 const pilihMatkul = () => {
@@ -119,40 +120,32 @@ const pilihPengampu = () => {
   form.lecturer_id = selected?.dosen?.id || "";
 };
 
-const daftarSesi = ref([
-  {
-    id: 1,
-    mata_kuliah: "Pemrograman Web",
-    kelas: "TI-4A",
-    dosen: "Pak Budi",
-    pertemuan: "PERTEMUAN 1",
-    tanggal: "2025-02-12",
-    hari: "Selasa",
-    jam: "08:13 - 13:30",
-    status: "Terjadwal",
-  },
-]);
+const daftarSesi = ref([]);
 
 const filteredSesi = computed(() => {
   return daftarSesi.value.filter((item) => {
     const keyword = searchSesi.value.toLowerCase();
 
+    const mataKuliah = item.course_name || "";
+    const kelas = item.class_name || "";
+    const dosen = item.lecturer?.employee_name || "";
+
     const cocokSearch =
-      item.mata_kuliah.toLowerCase().includes(keyword) ||
-      item.kelas.toLowerCase().includes(keyword) ||
-      item.dosen.toLowerCase().includes(keyword);
+      mataKuliah.toLowerCase().includes(keyword) ||
+      kelas.toLowerCase().includes(keyword) ||
+      dosen.toLowerCase().includes(keyword);
 
     const cocokMatkul =
       filterMataKuliah.value === "" ||
-      item.mata_kuliah === filterMataKuliah.value;
+      mataKuliah === filterMataKuliah.value;
 
     const cocokKelas =
       filterKelas.value === "" ||
-      item.kelas === filterKelas.value;
+      kelas === filterKelas.value;
 
     const cocokTanggal =
       filterTanggal.value === "" ||
-      item.tanggal === filterTanggal.value;
+      item.session_date === filterTanggal.value;
 
     return cocokSearch && cocokMatkul && cocokKelas && cocokTanggal;
   });
@@ -213,6 +206,11 @@ const konfirmasiHapus = () => {
         </div>
 
         <div>
+          <label class="block text-sm font-semibold mb-1">Topik</label>
+          <input v-model="form.topic" type="text" placeholder="Masukkan topik sesi" class="w-full border rounded-lg px-3 py-2"/>
+        </div>
+
+        <div>
           <label class="block text-sm font-semibold mb-1">Tanggal Mulai</label>
           <input v-model="form.start_date" type="date" class="w-full border rounded-lg px-3 py-2"/>
         </div>
@@ -251,7 +249,7 @@ const konfirmasiHapus = () => {
           </select>
         </div>
 
-        <div class="flex justify-end gap-4">
+        <div class="flex- justify-end gap-4">
           <button type="submit" class="flex h-[40px] items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold">
             <Save :size="18" />
             Buat Jadwal
@@ -259,7 +257,6 @@ const konfirmasiHapus = () => {
         </div>
       </form>
     </div>
-
     <div class="card-dashboard bg-white rounded-xl shadow-md p-5 mt-6">
       <h2 class="text-xl font-bold mb-4">DAFTAR SESI</h2>
 
@@ -302,9 +299,12 @@ const konfirmasiHapus = () => {
         <thead>
           <tr class="bg-blue-200 text-left">
             <th class="p-3">NO</th>
+            <th class="p-3">MATA KULIAH</th>
+            <th class="p-3">KELAS</th>
+            <th class="p-3">DOSEN</th>
             <th class="p-3">PERTEMUAN</th>
+            <th class="p-3">TOPIK</th>
             <th class="p-3">TANGGAL</th>
-            <th class="p-3">HARI</th>
             <th class="p-3">JAM</th>
             <th class="p-3">STATUS</th>
             <th class="p-3 text-center">AKSI</th>
@@ -315,15 +315,18 @@ const konfirmasiHapus = () => {
           <!-- Perbaikan: Mengubah data di dalam row agar dinamis sesuai item dari v-for -->
           <tr v-for="(item, index) in filteredSesi" :key="item.id" class="hover:bg-gray-50 border-b border-gray-200">
             <td class="p-3">{{ index + 1 }}</td>
-            <td class="p-3">{{ item.pertemuan }}</td>
-            <td class="p-3">{{ item.tanggal }}</td>
-            <td class="p-3">{{ item.hari }}</td>
-            <td class="p-3">{{ item.jam }}</td>
+            <td>{{ item.course_name }}</td>
+            <td>{{ item.class_name }}</td>
+            <td>{{ item.lecturer.employee_name || '-' }}</td>
+            <td class="p-3">PERTEMUAN {{ item.session_number }}</td>
+            <td class="p-3">{{ item.topic || '-' }}</td>
+            <td class="p-3">{{ item.session_date }}</td>
+            <td class="p-3">{{ item.start_time }} - {{ item.end_time }}</td>
 
             <td class="p-3">
               <span class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold"
               :class="
-                item.status === 'Terjadwal'
+                item.status === 'open'
                   ? 'bg-green-100 text-green-700'
                   : 'bg-yellow-100 text-yellow-700'
               ">

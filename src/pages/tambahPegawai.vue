@@ -1,12 +1,15 @@
 <script setup>
 import AdminLayout from "./adminLayout.vue"; 
-import { reactive, onMounted } from "vue";
+import { reactive, onMounted, computed, ref } from "vue";
 import { useRouter, RouterLink } from "vue-router"; 
 import { Save } from 'lucide-vue-next';
 import { wilayahService } from "../services/wilayah";
 import { employeesService } from "../services/pegawai";
 
 const router = useRouter();
+const nipInput = ref(null);
+const nikInput = ref(null);
+const phoneInput = ref(null);
 
 const { createEmployee } = employeesService();
 
@@ -70,13 +73,54 @@ const handleDistrictChange = async () => {
   await getVillages(form.district_code);
 };
 
-const simpanPegawai = async () => {
-  try {
-    if (!form.employee_name || !form.nip || !form.nik) {
-      alert("Nama, NIP, dan NIK wajib diisi!");
-      return;
-    }
+const isNumberOnly = (value) => {
+  return /^\d*$/.test(value);
+};
 
+const nipError = computed(() => {
+  return form.nip && !isNumberOnly(form.nip);
+});
+
+const nikError = computed(() => {
+  return form.nik && !isNumberOnly(form.nik);
+});
+
+const phoneError = computed(() => {
+  return form.phone_number && !isNumberOnly(form.phone_number);
+});
+
+const simpanPegawai = async () => {
+  if (nipError.value) {
+    alert("NIP harus menggunakan angka");
+    nipInput.value?.focus();
+    return;
+  }
+
+  if (form.nip.length !== 18) {
+    alert("NIP harus terdiri dari 18 digit");
+    nipInput.value?.focus();
+    return;
+  }
+
+  if (nikError.value) {
+    alert("NIK harus menggunakan angka");
+    nikInput.value?.focus();
+    return;
+  }
+
+  if (form.nik.length !== 16) {
+    alert("NIK harus terdiri dari 16 digit");
+    nikInput.value?.focus();
+    return;
+  }
+
+  if (phoneError.value) {
+    alert("No. HP harus menggunakan angka");
+    phoneInput.value?.focus();
+    return;
+  }
+
+  try {
     await createEmployee({
       employee_name: form.employee_name,
       nip: form.nip,
@@ -96,8 +140,7 @@ const simpanPegawai = async () => {
     alert("Pegawai berhasil ditambahkan!");
     router.push("/pegawai");
   } catch (error) {
-    console.log("Error menyimpan pegawai:", error.response?.data);
-    alert("Gagal menyimpan pegawai");
+    console.log(error);
   }
 };
 
@@ -141,10 +184,12 @@ const batal = () => {
           <input
             id="nip"
             v-model="form.nip"
-            type="text"
-            required
-            placeholder="Contoh: 19XXXXXXXXXXXX"
+            ref="nipInput"
+            type="text" inputmode="numeric" maxlength="18" autocomplete="off" placeholder="Masukkan 18 digit NIP"
             class="w-full border bg-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            :class="[
+            'w-full bg-white rounded-lg px-3 py-2 outline-none',
+            nipError  ? 'border border-red-500 focus:ring-2 focus:ring-red-500'  : 'border focus:ring-2 focus:ring-blue-500']"
           />
         </div>
 
@@ -153,10 +198,12 @@ const batal = () => {
           <input
             id="nik"
             v-model="form.nik"
-            type="text"
-            required
-            placeholder="Masukkan 16 digit NIK"
+            ref="nikInput"
+            type="text" inputmode="numeric" maxlength="16" autocomplete="off" placeholder="Masukkan 16 digit NIK"
             class="w-full border bg-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            :class="[
+            'w-full bg-white rounded-lg px-3 py-2 outline-none',
+            nikError  ? 'border border-red-500 focus:ring-2 focus:ring-red-500'  : 'border focus:ring-2 focus:ring-blue-500']"
           />
         </div>
 
@@ -211,10 +258,14 @@ const batal = () => {
           <input
             id="phone_number"
             v-model="form.phone_number"
-            type="tel"
+            ref="phoneInput"
+            type="text" inputmode="numeric"
             required
             placeholder="08XXXXXXXXXX"
             class="w-full bg-white border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            :class="[
+            'w-full bg-white rounded-lg px-3 py-2 outline-none',
+            phoneError  ? 'border border-red-500 focus:ring-2 focus:ring-red-500'  : 'border focus:ring-2 focus:ring-blue-500']"
           />
         </div>
 

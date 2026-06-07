@@ -5,13 +5,17 @@ export function employeesService() {
   const employees = ref([]);
   const meta = ref(null);
 
-  async function getEmployees(page = 1) {
+  async function getEmployees(page = 1, search = "") {
   try {
     const token = localStorage.getItem("token");
 
     const res = await axios.get(
-      `/employees?page=${page}`,
+      "/employees",
       {
+        params: {
+          page,
+          search
+        },
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -4,20 +4,22 @@ import { ref, computed, onMounted } from "vue";
 import { Users, Clock3, FileText, UserCheck } from "lucide-vue-next";
 import { employeesService } from "../services/pegawai";
 import { verifikasiService } from "../services/verifikasi";
+import { presensiService } from "../services/presensi";
+
+const { getEmployeeCount } = employeesService();
+const { verifikasi, getAllVerifikasi, getVerifikasiPending,getLaporanMasuk, getVerifikasiTerbaru} = verifikasiService();
+const { getPresensi } = presensiService();
 
 const totalPegawai = ref(0);
 const totalPending = ref(0);
 const laporanMasuk = ref(0);
 const verifikasiTerbaru = ref([]);
-
-const { getEmployeeCount } = employeesService();
-
-const { verifikasi, getAllVerifikasi, getVerifikasiPending,getLaporanMasuk, getVerifikasiTerbaru} = verifikasiService();
-
-const presensi = ref([
-  { id: 1, status: "hadir" },
-  { id: 2, status: "izin" },
-  { id: 3, status: "tidak-hadir" },
+const totalPresensiHadir = ref(0);
+const presensiHariIni = ref([
+  { label: "Hadir", jumlah: 0, persen: 0, warna: "bg-green-500" },
+  { label: "Sakit", jumlah: 0, persen: 0, warna: "bg-blue-300" },
+  { label: "Izin", jumlah: 0, persen: 0, warna: "bg-yellow-400" },
+  { label: "Alpha", jumlah: 0, persen: 0, warna: "bg-red-500" },
 ]);
 
 onMounted(async () => {
@@ -27,6 +29,31 @@ onMounted(async () => {
   verifikasiTerbaru.value = await getVerifikasiTerbaru();
 
   await getAllVerifikasi();
+});
+
+onMounted(async () => {
+  const items = await getPresensi(); // ambil data dari backend
+
+  // Flatten semua pegawai dari semua sesi
+  const allPegawai = items.flatMap(sess => sess.pegawai || []);
+
+  // Hitung jumlah per status
+  const total = allPegawai.reduce((acc, item) => {
+    if (!item.status) return acc;
+    acc[item.status] = (acc[item.status] || 0) + 1;
+    return acc;
+  }, {});
+
+  const jumlahTotal = Object.values(total).reduce((a, b) => a + b, 0) || 1;
+
+  presensiHariIni.value = [
+    { label: "Hadir", jumlah: total.hadir || 0, persen: Math.round((total.hadir || 0) / jumlahTotal * 100), warna: "bg-green-500" },
+    { label: "Sakit", jumlah: total.sakit || 0, persen: Math.round((total.sakit || 0) / jumlahTotal * 100), warna: "bg-blue-300" },
+    { label: "Izin", jumlah: total.izin || 0, persen: Math.round((total.izin || 0) / jumlahTotal * 100), warna: "bg-yellow-400" },
+    { label: "Alpha", jumlah: total.alpha || 0, persen: Math.round((total.alpha || 0) / jumlahTotal * 100), warna: "bg-red-500" },
+  ];
+
+  totalPresensiHadir.value = total.hadir || 0;
 });
 
 const ringkasanVerifikasi = computed(() => {
@@ -64,16 +91,16 @@ const persenRejected = computed(() => {
   );
 });
 
-const totalPresensiHadir = computed(() => {
-  return presensi.value.filter((item) => item.status === "hadir").length;
-});
+// const totalPresensiHadir = computed(() => {
+//   return presensi.value.filter((item) => item.status === "hadir").length;
+// });
 
-const presensiHariIni = [
-  { label: "Hadir", jumlah: 95, persen: 79, warna: "bg-green-500" },
-  { label: "Sakit", jumlah: 5, persen: 1, warna: "bg-blue-300" },
-  { label: "Izin", jumlah: 7, persen: 6, warna: "bg-yellow-400" },
-  { label: "Alpha", jumlah: 7, persen: 6, warna: "bg-red-500" },
-];
+// const presensiHariIni = [
+//   { label: "Hadir", jumlah: 95, persen: 79, warna: "bg-green-500" },
+//   { label: "Sakit", jumlah: 5, persen: 1, warna: "bg-blue-300" },
+//   { label: "Izin", jumlah: 7, persen: 6, warna: "bg-yellow-400" },
+//   { label: "Alpha", jumlah: 7, persen: 6, warna: "bg-red-500" },
+// ];
 
 const namaField = (field) => {
   const map = {
@@ -192,7 +219,7 @@ const namaField = (field) => {
 
         <div class="space-y-2">
           <div
-            v-for="item in presensiHariIni"
+            v-for="item in presensiHariIni" 
             :key="item.label"
             class="grid grid-cols-[60px_1fr_30px_30px] items-center gap-3 text-[13px]"
           >

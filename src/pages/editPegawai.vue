@@ -1,6 +1,6 @@
 <script setup>
 import adminLayout from "./adminLayout.vue";
-import { reactive, onMounted } from "vue";
+import { reactive, onMounted, computed, ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { Save } from "lucide-vue-next";
 import { wilayahService } from "../services/wilayah";
@@ -8,6 +8,9 @@ import { employeesService } from "../services/pegawai";
 
 const router = useRouter();
 const route = useRoute();
+const nipInput = ref(null);
+const nikInput = ref(null);
+const phoneInput = ref(null);
 
 const { getEmployeeById, updateEmployee } = employeesService();
 
@@ -31,8 +34,7 @@ const form = reactive({
   birth_date: "",
   address: "",
   phone_number: "",
-
-  citizen_code: "",
+  citizen_code: "ID",
   province_code: "",
   city_code: "",
   district_code: "",
@@ -47,6 +49,7 @@ onMounted(async () => {
     console.log("ID dari route:", id);
 
     const data = await getEmployeeById(id);
+    console.log(data);
 
     form.employee_name = data.employee_name;
     form.nip = data.nip;
@@ -57,7 +60,7 @@ onMounted(async () => {
     form.address = data.address;
     form.phone_number = data.phone_number;
 
-    form.citizen_code = data.citizen_code;
+    form.citizen_code = "ID";
     form.province_code = data.province_code;
     form.city_code = data.city_code;
     form.district_code = data.district_code;
@@ -89,16 +92,94 @@ const handleDistrictChange = async () => {
   await getVillages(form.district_code);
 };
 
-const updatePegawai = async () => { //
+const isNumberOnly = (value) => {
+  return /^\d*$/.test(value);
+};
+
+const nipError = computed(() => {
+  return form.nip && !isNumberOnly(form.nip);
+});
+
+const nikError = computed(() => {
+  return form.nik && !isNumberOnly(form.nik);
+});
+
+const phoneError = computed(() => {
+  return form.phone_number && !isNumberOnly(form.phone_number);
+});
+
+const updatePegawai = async () => {
+  if (nipError.value) {
+    alert("NIP harus menggunakan angka");
+    nipInput.value?.focus();
+    return;
+  }
+
+  if (form.nip.length !== 18) {
+    alert("NIP harus terdiri dari 18 digit");
+    nipInput.value?.focus();
+    return;
+  }
+
+  if (nikError.value) {
+    alert("NIK harus menggunakan angka");
+    nikInput.value?.focus();
+    return;
+  }
+
+  if (form.nik.length !== 16) {
+    alert("NIK harus terdiri dari 16 digit");
+    nikInput.value?.focus();
+    return;
+  }
+
+  if (phoneError.value) {
+    alert("No. HP harus menggunakan angka");
+    phoneInput.value?.focus();
+    return;
+  }
+
   try {
     const id = route.params.id;
-    await updateEmployee(id, { ...form, citizen_code: null });
+
+    const payload = {
+      employee_name: form.employee_name,
+      nip: form.nip,
+      nik: form.nik,
+      gender: form.gender,
+      birth_place: form.birth_place,
+      birth_date: form.birth_date,
+      address: form.address,
+      phone_number: form.phone_number,
+
+      province_code: form.province_code,
+      city_code: form.city_code,
+      district_code: form.district_code,
+      village_code: form.village_code,
+
+      citizen_code: "ID",
+    };
+
+    console.log("Payload update:", payload);
+
+    const response = await updateEmployee(id, payload);
+
+    console.log("Response update:", response);
+    console.log("Data setelah update:", response.data); 
 
     alert("Pegawai berhasil diupdate!");
     router.push("/pegawai");
+
   } catch (error) {
-    console.log("Gagal update pegawai:", error.response?.data || error);
-    alert("Gagal update pegawai!");
+    console.error(
+      "Gagal update pegawai:",
+      error.response?.data || error
+    );
+
+    alert(
+      error.response?.data?.message ||
+      "Gagal update pegawai!"
+    );
   }
 };
 
@@ -141,10 +222,12 @@ const batal = () => {
           <input
             id="nip"
             v-model="form.nip"
-            type="text"
-            required
-            placeholder="Contoh: 19XXXXXXXXXXXX"
+            ref="nipInput"
+            type="text" inputmode="numeric" maxlength="18" autocomplete="off" placeholder="Masukkan 18 digit NIP"
             class="w-full bg-white border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            :class="[
+            'w-full bg-white rounded-lg px-3 py-2 outline-none',
+            nipError  ? 'border border-red-500 focus:ring-2 focus:ring-red-500'  : 'border focus:ring-2 focus:ring-blue-500']"
           />
         </div>
 
@@ -153,10 +236,12 @@ const batal = () => {
           <input
             id="nik"
             v-model="form.nik"
-            type="text"
-            required
-            placeholder="Masukkan 16 digit NIK"
+            ref="nikInput"
+            type="text" inputmode="numeric" maxlength="16" autocomplete="off" placeholder="Masukkan 16 digit NIK"
             class="w-full bg-white border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            :class="[
+            'w-full bg-white rounded-lg px-3 py-2 outline-none',
+            nikError  ? 'border border-red-500 focus:ring-2 focus:ring-red-500'  : 'border focus:ring-2 focus:ring-blue-500']"
           />
         </div>
 
@@ -211,10 +296,13 @@ const batal = () => {
           <input
             id="phone_number"
             v-model="form.phone_number"
-            type="tel"
-            required
+            ref="phoneInput"
+            type="text" inputmode="numeric" maxlength="18" autocomplete="off"
             placeholder="08XXXXXXXXXX"
             class="w-full bg-white border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+            :class="[
+            'w-full bg-white rounded-lg px-3 py-2 outline-none',
+            phoneError  ? 'border border-red-500 focus:ring-2 focus:ring-red-500'  : 'border focus:ring-2 focus:ring-blue-500']"
           />
         </div>
 

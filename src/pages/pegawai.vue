@@ -1,6 +1,6 @@
 <script setup>
 import adminLayout from "./adminLayout.vue";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { Search, Pencil, Trash2, TriangleAlert } from "lucide-vue-next";
 import { employeesService } from "../services/pegawai";
@@ -12,6 +12,10 @@ const { employees, meta, getEmployees, deleteEmployee } = employeesService();
 
 onMounted(async () => {
   await getEmployees();
+});
+
+watch(search, async (newValue) => {
+  await getEmployees(1, newValue);
 });
 
 const showModal = ref(false);
@@ -46,18 +50,6 @@ const konfirmasiHapus = async () => {
 const tutupModal = () => {
   showModal.value = false;
 };
-
-const filteredPegawai = computed(() => { 
-    return employees.value.filter((item) => {
-        const keyword = search.value.toLowerCase();
-
-        return(
-            item.employee_name.toLowerCase().includes(keyword) ||
-            item.nip.toLowerCase().includes(keyword) ||
-            item.nik.toLowerCase().includes(keyword)
-        );
-    });
-});
 
 const namaField = (field) => {
   const map = {
@@ -112,7 +104,7 @@ const namaField = (field) => {
           </thead>
 
           <tbody>
-            <tr v-for="(item, index) in filteredPegawai" :key="item.id" class="hover:bg-gray-50 border-b border-gray-200">
+            <tr v-for="(item, index) in employees" :key="item.id" class="hover:bg-gray-50 border-b border-gray-200">
               <td class="p-2 font-semibold">{{ index + 1 }}</td>
               <td class="p-2 font-semibold">{{ item.employee_name }}</td>
               <td class="p-2 font-semibold">{{ item.nip }}</td>
@@ -145,7 +137,7 @@ const namaField = (field) => {
           v-for="link in meta.links"
           :key="link.label"
           :disabled="!link.url"
-          @click="link.page && getEmployees(link.page)"
+          @click="link.page && getEmployees(link.page, search)"
           class="px-3 py-1 rounded border text-sm"
           :class="link.active
             ? 'bg-blue-900 text-white'

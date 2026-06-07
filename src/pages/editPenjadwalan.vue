@@ -3,37 +3,76 @@ import adminLayout from "./adminLayout.vue";
 import { reactive, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { Save } from "lucide-vue-next";
+import { penjadwalanService } from "../services/penjadwalan";
 
 const router = useRouter();
 const route = useRoute();
 
+const { getJadwalById, updateJadwal } = penjadwalanService();
+
 const form = reactive({
-  mata_kuliah: "",
-  tanggal_mulai: "",
-  kelas: "",
-  jam_mulai: "",
-  dosen: "",
-  jam_selesai: "",
+  course_code: "",
+  course_name: "",
+  class_id: "",
+  class_name: "",
+  topic: "",
+  pengampu_id: "",
+  lecturer_id: "",
+  lecturer_name: "",
+  session_date: "",
+  start_time: "",
+  end_time: "",
 });
 
-onMounted(() => {
+onMounted(async () => {
   const id = route.params.id;
-  console.log("ID jadwal:", id);
+  console.log("ID dari route:", id);
 
-  // sementara dummy dulu
-  form.mata_kuliah = "Pemrograman Web";
-  form.tanggal_mulai = "2025-02-12";
-  form.kelas = "TI-4A";
-  form.jam_mulai = "08:00";
-  form.dosen = "Wade Cooper";
-  form.jam_selesai = "10:00";
+  const data = await getJadwalById(id);
+  console.log("Data detail jadwal:", data);
+
+  if (!data) return;
+
+  form.course_code = data.course_code || "";
+  form.course_name = data.course_name || "";
+  form.class_id = data.class_id || "";
+  form.topic = data.topic || "";
+  form.class_name = data.class_name || "";
+  form.pengampu_id = data.pengampu_id || "";
+  form.lecturer_id = data.lecturer_id || "";
+  form.lecturer_name = data.lecturer?.employee_name || "";
+  form.session_date = data.session_date || "";
+  form.start_time = data.start_time?.slice(0, 5) || "";
+  form.end_time = data.end_time?.slice(0, 5) || "";
 });
 
-const simpanJadwal = () => {
-  console.log("Update jadwal:", { ...form });
+const simpanJadwal = async () => {
+  try {
+    const id = route.params.id;
 
-  alert("Jadwal berhasil diupdate!");
-  router.push("/penjadwalan");
+    const payload = {
+      pengampu_id: form.pengampu_id,
+      lecturer_id: form.lecturer_id,
+      class_id: form.class_id,
+      class_name: form.class_name,
+      topic: form.topic,
+      course_code: form.course_code,
+      course_name: form.course_name,
+      session_date: form.session_date,
+      start_time: form.start_time,
+      end_time: form.end_time,
+    };
+
+    console.log("Payload update jadwal:", payload);
+
+    await updateJadwal(id, payload);
+
+    alert("Jadwal berhasil diupdate!");
+    router.push("/penjadwalan");
+  } catch (error) {
+    console.log("Error update:", error.response?.data || error);
+    alert("Gagal update jadwal!");
+  }
 };
 
 const batal = () => {
@@ -59,47 +98,38 @@ const batal = () => {
 
       <form @submit.prevent="simpanJadwal" class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-semibold mb-1">Mata Kuliah</label>
-          <select v-model="form.mata_kuliah" class="w-full border rounded-lg px-3 py-2">
-            <option value="">Pilih Mata Kuliah</option>
-            <option value="Pemrograman Web">Pemrograman Web</option>
-            <option value="Basis Data">Basis Data</option>
-            <option value="PBO">PBO</option>
-          </select>
+          <label class="block text-sm font-semibold mb-1">MATA KULIAH</label>
+          <input v-model="form.course_name" type="text" class="w-full border rounded-lg px-3 py-2" readonly />
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold mb-1">Topik</label>
+          <input v-model="form.topic" type="text" placeholder="Masukkan topik sesi" class="w-full border rounded-lg px-3 py-2"/>
         </div>
 
         <div>
           <label class="block text-sm font-semibold mb-1">Tanggal Mulai</label>
-          <input v-model="form.tanggal_mulai" type="date" class="w-full border rounded-lg px-3 py-2"/>
+          <input v-model="form.session_date" type="date" class="w-full border rounded-lg px-3 py-2"/>
         </div>
 
         <div>
-          <label class="block text-sm font-semibold mb-1">Kelas</label>
-          <select v-model="form.kelas" class="w-full border rounded-lg px-3 py-2">
-            <option value="">Pilih Kelas</option>
-            <option value="TI-4A">TI-4A</option>
-            <option value="TI-4B">TI-4B</option>
-          </select>
+          <label class="block text-sm font-semibold mb-1">KELAS</label>
+          <input v-model="form.class_name" type="text" class="w-full border rounded-lg px-3 py-2" readonly />
         </div>
 
         <div>
           <label class="block text-sm font-semibold mb-1">Jam Mulai</label>
-          <input v-model="form.jam_mulai" type="time" class="w-full border rounded-lg px-3 py-2"/>
+          <input v-model="form.start_time" type="time" class="w-full border rounded-lg px-3 py-2"/>
         </div>
 
         <div>
-          <label class="block text-sm font-semibold mb-1">Dosen Pengampu</label>
-          <select v-model="form.dosen" class="w-full border rounded-lg px-3 py-2">
-            <option value="">Pilih Dosen</option>
-            <option value="Wade Cooper">Wade Cooper</option>
-            <option value="Arlene Mccoy">Arlene Mccoy</option>
-            <option value="Devon Webb">Devon Webb</option>
-          </select>
+          <label class="block text-sm font-semibold mb-1">DOSEN</label>
+          <input v-model="form.lecturer_name" type="text" class="w-full border rounded-lg px-3 py-2" readonly />
         </div>
 
         <div>
           <label class="block text-sm font-semibold mb-1">Jam Selesai</label>
-          <input v-model="form.jam_selesai" type="time" class="w-full border rounded-lg px-3 py-2"/>
+          <input v-model="form.end_time" type="time" class="w-full border rounded-lg px-3 py-2"/>
         </div>
 
         <div class="flex items-right gap-2 col-span-2 justify-end">

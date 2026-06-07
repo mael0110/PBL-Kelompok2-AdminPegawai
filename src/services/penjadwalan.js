@@ -56,14 +56,51 @@ export function penjadwalanService() {
     }
   }
 
+  async function getJadwal(page = 1) {
+    try {
+      const res = await axios.get(`/class-sessions?page=${page}`);
+
+      console.log("Response jadwal:", res.data);
+
+      sesiKelas.value = res.data.data || [];
+
+      return res.data.data || [];
+    } catch (error) {
+      console.log("Gagal ambil jadwal:", error.response?.data || error);
+      sesiKelas.value = [];
+      return [];
+    }
+  }
+
+  async function getJadwalById(classSessionId) {
+    try {
+      const res = await axios.get(`/class-sessions/${classSessionId}`);
+      return res.data.data;
+    } catch (error) {
+      console.log("Gagal ambil detail jadwal:", error.response?.data || error);
+      return null;
+    }
+  }
+
+  async function updateJadwal(classSessionId, payload) {
+    try {
+      const res = await axios.put(`/class-sessions/${classSessionId}`, payload);
+      return res.data;
+    } catch (error) {
+      console.log("Gagal update jadwal:", error.response?.data || error);
+      throw error;
+    }
+  }
+
   return {
     sesiKelas,
     generateSesi,
     getCourses,
-    // getLecturers,
-    // getClasses,
     getProdi,
     getKelasByProdi,
-    getPengampuByKelas
+    getPengampuByKelas,
+    getJadwal,
+    getJadwalById,
+    updateJadwal,
   };
 }
