@@ -92,6 +92,29 @@ export function penjadwalanService() {
     }
   }
 
+  async function deleteSesiKelas(uuids = []) {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.post(
+        "/class-sessions/delete",
+        { uuids },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Berhasil hapus sesi kelas:", res.data);
+      return res.data;
+    } catch (error) {
+      console.log("Gagal hapus sesi kelas:", error.response?.data || error);
+      throw error;
+    }
+  }
+
   return {
     sesiKelas,
     generateSesi,
@@ -102,5 +125,6 @@ export function penjadwalanService() {
     getJadwal,
     getJadwalById,
     updateJadwal,
+    deleteSesiKelas,
   };
 }

@@ -6,7 +6,8 @@ import { Save, RefreshCw, Trash2, Pencil, TriangleAlert } from "lucide-vue-next"
 import { penjadwalanService } from "../services/penjadwalan";
 
 const router = useRouter();
-const { generateSesi, getCourses, getLecturers, getClasses, getProdi, getKelasByProdi, getPengampuByKelas, getJadwal } = penjadwalanService();
+const { generateSesi, getCourses, getLecturers, getClasses, getProdi, 
+  getKelasByProdi, getPengampuByKelas, getJadwal, deleteSesiKelas } = penjadwalanService();
 const courses = ref([]);
 // const lecturers = ref([]);
 // const classes = ref([]);
@@ -177,13 +178,23 @@ const tutupModal = () => {
   selectedSesi.value = null;
 };
 
-const konfirmasiHapus = () => {
-  console.log("Hapus sesi:", selectedSesi.value);
+const konfirmasiHapus = async () => {
+  if (!selectedSesi.value) return;
 
-  // nanti kalau sudah ada API delete, panggil di sini
+  try {
+    const uuids = [selectedSesi.value.id]; // array, bisa multiple jika bulk
+    await deleteSesiKelas(uuids);
 
-  showModal.value = false;
-  selectedSesi.value = null;
+    alert("Sesi kelas berhasil dihapus!");
+
+    // Refresh daftar sesi
+    daftarSesi.value = await getJadwal();
+
+    showModal.value = false;
+    selectedSesi.value = null;
+  } catch (error) {
+    alert("Gagal menghapus sesi kelas!");
+  }
 };
 </script>
 
@@ -359,7 +370,7 @@ const konfirmasiHapus = () => {
         <h2 class="text-2xl font-bold mb-6">Yakin Ingin Menghapus, <br>{{  selectedSesi ? selectedSesi.pertemuan : ""  }}</h2>
 
         <div class="flex justify-center gap-3">
-          <button @click="konfirmasiHapus" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg text-sm transition-colors">
+          <button @click="konfirmasiHapus(item)" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg text-sm transition-colors">
             Yakin
           </button>
           <button @click="tutupModal" class="bg-gray-700 hover:bg-gray-800 text-white px-5 py-2 rounded-lg text-sm transition-colors">
