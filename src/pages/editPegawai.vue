@@ -157,7 +157,7 @@ const updatePegawai = async () => {
       district_code: form.district_code,
       village_code: form.village_code,
 
-      citizen_code: "ID",
+      citizen_code: "ID"
     };
 
     console.log("Payload update:", payload);

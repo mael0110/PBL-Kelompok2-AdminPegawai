@@ -9,14 +9,13 @@ export function verifikasiService() {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await axios.get(
-        `/change-requests?page=${page}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await axios.get(`/change-requests`, {
+        params: { page },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      console.log("Mengambil verifikasi page:", page);
+      console.log("Response meta:", res.data.meta);
 
       verifikasi.value = res.data.data;
       meta.value = res.data.meta;
@@ -32,7 +31,7 @@ export function verifikasiService() {
       const res = await axios.put(
         `/change-requests/${id}`,
         {
-          status: status,
+          status
         },
         {
           headers: {
@@ -79,11 +78,25 @@ export function verifikasiService() {
   }
 
   async function getVerifikasiById(id) {
-    const res = await axios.get("/change-requests");
+    try {
+      // Ambil semua verifikasi
+      let allData = [];
+      let page = 1;
+      let lastPage = 1;
 
-    const data = res.data.data.find((item) => item.id === id);
+      do {
+        const res = await axios.get(`/change-requests?page=${page}`);
+        allData = [...allData, ...res.data.data];
+        lastPage = res.data.meta.last_page;
+        page++;
+      } while (page <= lastPage);
 
-    return data;
+      const data = allData.find((item) => item.id === id);
+      return data;
+    } catch (error) {
+      console.log("Gagal ambil verifikasi by id:", error.response?.data || error);
+      return null;
+    }
   }
 
   async function getLaporanMasuk() {

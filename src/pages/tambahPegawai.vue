@@ -11,7 +11,7 @@ const nipInput = ref(null);
 const nikInput = ref(null);
 const phoneInput = ref(null);
 
-const { createEmployee } = employeesService();
+const { createEmployee, meta, getEmployees } = employeesService();
 
 const {
   countries,
@@ -138,7 +138,10 @@ const simpanPegawai = async () => {
     });
 
     alert("Pegawai berhasil ditambahkan!");
-    router.push("/pegawai");
+    await getEmployees();
+
+    const lastPage = meta.value?.last_page || 1;
+    router.push({ path: "/pegawai", query: { page: lastPage } });
   } catch (error) {
     console.log(error);
   }

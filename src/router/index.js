@@ -19,7 +19,7 @@ const routes = [
   { path: "/pegawai", name: "pegawai", component: Pegawai },
   { path: "/verifikasi", name: "verifikasi", component: Verifikasi },
   { path: "/presensi", name: "presensi", component: Presensi },
-  {path: "/pegawai/tambah",name: "tambah-pegawai",component: TambahPegawai,},
+  {path: "/pegawai/tambah",name: "tambah-pegawai",component: TambahPegawai, },
   {path: "/pegawai/edit/:id", name: "edit-pegawai", component: EditPegawai},
   {path: "/verifikasi/edit/:id", name: "edit-verifikasi", component: EditVerifikasi},
   {path: "/penjadwalan", name: "penjadwalan", component: Penjadwalan},

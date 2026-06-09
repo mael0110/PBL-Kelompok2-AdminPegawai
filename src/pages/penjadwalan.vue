@@ -7,7 +7,7 @@ import { penjadwalanService } from "../services/penjadwalan";
 
 const router = useRouter();
 const { generateSesi, getCourses, getLecturers, getClasses, getProdi, 
-  getKelasByProdi, getPengampuByKelas, getJadwal, deleteSesiKelas } = penjadwalanService();
+  getKelasByProdi, getPengampuByKelas, getJadwal, deleteSesiKelas, meta } = penjadwalanService();
 const courses = ref([]);
 // const lecturers = ref([]);
 // const classes = ref([]);
@@ -152,6 +152,14 @@ const filteredSesi = computed(() => {
   });
 });
 
+const currentPage = ref(1);
+
+// Saat user klik tombol pagination
+const goPage = async (page) => {
+  currentPage.value = page;
+  daftarSesi.value = await getJadwal(page);
+};
+
 // Perbaikan: Tambahkan fungsi simpanJadwal agar tidak crash saat form di-submit
 const simpanJadwal = () => {
   console.log("Data disimpan:", form);
@@ -216,10 +224,10 @@ const konfirmasiHapus = async () => {
           </select>
         </div>
 
-        <div>
+        <!-- <div>
           <label class="block text-sm font-semibold mb-1">Topik</label>
           <input v-model="form.topic" type="text" placeholder="Masukkan topik sesi" class="w-full border rounded-lg px-3 py-2"/>
-        </div>
+        </div> -->
 
         <div>
           <label class="block text-sm font-semibold mb-1">Tanggal Mulai</label>
@@ -260,7 +268,7 @@ const konfirmasiHapus = async () => {
           </select>
         </div>
 
-        <div class="flex- justify-end gap-4">
+        <div class="flex justify-end gap-4">
           <button type="submit" class="flex h-[40px] items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold">
             <Save :size="18" />
             Buat Jadwal
@@ -314,7 +322,7 @@ const konfirmasiHapus = async () => {
             <th class="p-3">KELAS</th>
             <th class="p-3">DOSEN</th>
             <th class="p-3">PERTEMUAN</th>
-            <th class="p-3">TOPIK</th>
+            <!-- <th class="p-3">TOPIK</th> -->
             <th class="p-3">TANGGAL</th>
             <th class="p-3">JAM</th>
             <th class="p-3">STATUS</th>
@@ -325,14 +333,14 @@ const konfirmasiHapus = async () => {
         <tbody>
           <!-- Perbaikan: Mengubah data di dalam row agar dinamis sesuai item dari v-for -->
           <tr v-for="(item, index) in filteredSesi" :key="item.id" class="hover:bg-gray-50 border-b border-gray-200">
-            <td class="p-3">{{ index + 1 }}</td>
-            <td>{{ item.course_name }}</td>
-            <td>{{ item.class_name }}</td>
-            <td>{{ item.lecturer.employee_name || '-' }}</td>
-            <td class="p-3">PERTEMUAN {{ item.session_number }}</td>
-            <td class="p-3">{{ item.topic || '-' }}</td>
-            <td class="p-3">{{ item.session_date }}</td>
-            <td class="p-3">{{ item.start_time }} - {{ item.end_time }}</td>
+            <td class="p-3 font-semibold">{{ index + 1 }}</td>
+            <td class="p-3 font-semibold">{{ item.course_name }}</td>
+            <td class="p-3 font-semibold">{{ item.class_name }}</td>
+            <td class="p-3 font-semibold">{{ item.lecturer.employee_name || '-' }}</td>
+            <td class="p-3 font-semibold">PERTEMUAN {{ item.session_number }}</td>
+            <!-- <td class="p-3 font-semibold">{{ item.topic || '-' }}</td> -->
+            <td class="p-3 font-semibold">{{ item.session_date }}</td>
+            <td class="p-3 font-semibold">{{ item.start_time }} - {{ item.end_time }}</td>
 
             <td class="p-3">
               <span class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold"
@@ -359,6 +367,21 @@ const konfirmasiHapus = async () => {
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div v-if="meta" class="flex justify-center gap-2 mt-4">
+        <button
+          v-for="link in meta.links"
+          :key="link.label"
+          :disabled="!link.url"
+          @click="link.page && goPage(link.page)"
+          class="px-3 py-1 rounded border text-sm"
+          :class="link.active
+            ? 'bg-blue-900 text-white'
+            : 'bg-white text-blue-900 hover:bg-blue-100'"
+        >
+          <span v-html="link.label"></span>
+        </button>
     </div>
 
     <div v-if="showModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">

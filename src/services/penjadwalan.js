@@ -3,6 +3,7 @@ import { ref } from "vue";
 
 export function penjadwalanService() {
   const sesiKelas = ref([]);
+  const meta = ref(null);
 
   async function generateSesi(payload) {
     try {
@@ -56,21 +57,22 @@ export function penjadwalanService() {
     }
   }
 
-  async function getJadwal(page = 1) {
-    try {
-      const res = await axios.get(`/class-sessions?page=${page}`);
+ async function getJadwal(page = 1) {
+  try {
+    const res = await axios.get(`/class-sessions?page=${page}`);
+    console.log("Response jadwal:", res.data);
 
-      console.log("Response jadwal:", res.data);
+    sesiKelas.value = res.data.data || [];
+    meta.value = res.data.meta; // pastikan meta disimpan setiap page
 
-      sesiKelas.value = res.data.data || [];
-
-      return res.data.data || [];
-    } catch (error) {
-      console.log("Gagal ambil jadwal:", error.response?.data || error);
-      sesiKelas.value = [];
-      return [];
-    }
+    return res.data.data || [];
+  } catch (error) {
+    console.log("Gagal ambil jadwal:", error.response?.data || error);
+    sesiKelas.value = [];
+    meta.value = null;
+    return [];
   }
+}
 
   async function getJadwalById(classSessionId) {
     try {
@@ -117,6 +119,7 @@ export function penjadwalanService() {
 
   return {
     sesiKelas,
+    meta,
     generateSesi,
     getCourses,
     getProdi,

@@ -102,10 +102,10 @@ const batal = () => {
           <input v-model="form.course_name" type="text" class="w-full border rounded-lg px-3 py-2" readonly />
         </div>
 
-        <div>
+        <!-- <div>
           <label class="block text-sm font-semibold mb-1">Topik</label>
           <input v-model="form.topic" type="text" placeholder="Masukkan topik sesi" class="w-full border rounded-lg px-3 py-2"/>
-        </div>
+        </div> -->
 
         <div>
           <label class="block text-sm font-semibold mb-1">Tanggal Mulai</label>

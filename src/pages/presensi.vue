@@ -158,7 +158,7 @@ const namaField = (field) => {
           <th class="p-3 text-letf">NO</th>
           <th class="p-3 text-left">NAMA PEGAWAI</th>
           <th class="p-3 text-left">EMAIL</th>
-          <th class="p-3 text-left">JAM MASUK-JAM KELUAR</th>
+          <th class="p-3 text-left">TANGGAL</th>
           <th class="p-3 text-left">STATUS</th>
         </tr>
       </thead>
@@ -168,7 +168,7 @@ const namaField = (field) => {
           <td class="p-3 text-semibold text-center">{{ index + 1 }}</td>
           <td class="p-3 text-semibold">{{ item.name || '-' }}</td>
           <td class="p-3 text-semibold">{{ item.email || '-' }}</td>
-          <td class="p-3 text-semibold">{{ item.jam_masuk || '-' }} - {{ item.jam_keluar || '-' }}</td>
+          <td class="p-3 text-semibold">{{ item.sesi_created_at || '-' }}</td>
           <td class="p-3 font-semibold text-left">
             <span
               class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold"

@@ -1,18 +1,28 @@
 <script setup>
 import adminLayout from "./adminLayout.vue";
 import { computed, onMounted, ref, watch } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { Search, Pencil, Trash2, TriangleAlert } from "lucide-vue-next";
 import { employeesService } from "../services/pegawai";
 
 const router = useRouter();
+const route = useRoute();
 const search = ref("");
+const currentPage = ref(1);
 
 const { employees, meta, getEmployees, deleteEmployee } = employeesService();
 
 onMounted(async () => {
-  await getEmployees();
+  const page = route.query.page ? Number(route.query.page) : 1;
+  currentPage.value = page;
+
+  await getEmployees(currentPage.value);
 });
+
+const goPage = async (page) => {
+  currentPage.value = page;
+  await getEmployees(page, search.value);
+};
 
 watch(search, async (newValue) => {
   await getEmployees(1, newValue);
@@ -41,7 +51,7 @@ const konfirmasiHapus = async () => {
 
     alert("Pegawai berhasil dihapus!");
 
-    await getEmployees();
+    await getEmployees(currentPage.value, search.value);
   } catch (error) {
     alert("Gagal menghapus pegawai!");
   }
@@ -116,11 +126,11 @@ const namaField = (field) => {
 
               <td class="p-2 text-center">
                 <div class="flex items-center justify-center gap-2">
-                  <button @click="router.push(`/pegawai/edit/${item.id}`)" class="text-yellow-600 hover:text-yellow-700">
+                  <!-- <button @click="router.push(`/pegawai/edit/${item.id}`)" class="text-yellow-600 hover:text-yellow-700">
                     <Pencil :size="16" />
-                  </button>
+                  </button> -->
 
-                  <button @click="bukaModalHapus(item)" class="text-red-600 hover:text-red-700">
+                  <button @click="bukaModalHapus(item)" class="text-red-600 hover:text-red-700 bg-gray-200 hover:bg-gray-300 p-2 rounded-lg">
                     <Trash2 :size="16" />
                   </button>
                 </div>
@@ -137,7 +147,7 @@ const namaField = (field) => {
           v-for="link in meta.links"
           :key="link.label"
           :disabled="!link.url"
-          @click="link.page && getEmployees(link.page, search)"
+          @click="link.page &&  goPage(link.page)"
           class="px-3 py-1 rounded border text-sm"
           :class="link.active
             ? 'bg-blue-900 text-white'
