@@ -54,6 +54,29 @@ const buatJadwal = async () => {
     await generateSesi(payload);
 
     alert("Berhasil generate 16 sesi kelas!");
+
+    // ==========================================
+    // FIX: RESET FORMULIR SETELAH BERHASIL
+    // ==========================================
+    form.pengampu_id = "";
+    form.lecturer_id = "";
+    form.class_id = "";
+    form.class_name = "";
+    form.topic = "";
+    form.course_code = "";
+    form.course_name = "";
+    form.start_date = "";
+    form.start_time = "";
+    form.end_time = "";
+    
+    // Kosongkan state penampung relasi dropdown prodi & list kelas/dosen
+    selectedProdi.value = "";
+    kelasList.value = [];
+    pengampuList.value = [];
+
+    // Muat ulang daftar sesi di bawah agar langsung ter-update otomatis
+    daftarSesi.value = await getJadwal();
+
   } catch (error) {
     console.log("Error generate:", error.response?.data || error);
     alert("Gagal generate sesi kelas!");
@@ -224,11 +247,6 @@ const konfirmasiHapus = async () => {
           </select>
         </div>
 
-        <!-- <div>
-          <label class="block text-sm font-semibold mb-1">Topik</label>
-          <input v-model="form.topic" type="text" placeholder="Masukkan topik sesi" class="w-full border rounded-lg px-3 py-2"/>
-        </div> -->
-
         <div>
           <label class="block text-sm font-semibold mb-1">Tanggal Mulai</label>
           <input v-model="form.start_date" type="date" class="w-full border rounded-lg px-3 py-2"/>
@@ -279,7 +297,7 @@ const konfirmasiHapus = async () => {
     <div class="card-dashboard bg-white rounded-xl shadow-md p-5 mt-6">
       <h2 class="text-xl font-bold mb-4">DAFTAR SESI</h2>
 
-      <div class="flex flex-wrap gap-3 mb-4"> <!-- Wrapper opsional untuk merapikan layout baris input filter -->
+      <div class="flex flex-wrap gap-3 mb-4">
         <input
           v-model="searchSesi"
           type="text"
@@ -313,7 +331,6 @@ const konfirmasiHapus = async () => {
         </button>
       </div>
 
-      <!-- TABLE -->
       <table class="table-dashboard w-full text-sm">
         <thead>
           <tr class="bg-blue-200 text-left">
@@ -322,7 +339,6 @@ const konfirmasiHapus = async () => {
             <th class="p-3">KELAS</th>
             <th class="p-3">DOSEN</th>
             <th class="p-3">PERTEMUAN</th>
-            <!-- <th class="p-3">TOPIK</th> -->
             <th class="p-3">TANGGAL</th>
             <th class="p-3">JAM</th>
             <th class="p-3">STATUS</th>
@@ -331,14 +347,12 @@ const konfirmasiHapus = async () => {
         </thead>
 
         <tbody>
-          <!-- Perbaikan: Mengubah data di dalam row agar dinamis sesuai item dari v-for -->
           <tr v-for="(item, index) in filteredSesi" :key="item.id" class="hover:bg-gray-50 border-b border-gray-200">
             <td class="p-3 font-semibold">{{ index + 1 }}</td>
             <td class="p-3 font-semibold">{{ item.course_name }}</td>
             <td class="p-3 font-semibold">{{ item.class_name }}</td>
             <td class="p-3 font-semibold">{{ item.lecturer.employee_name || '-' }}</td>
             <td class="p-3 font-semibold">PERTEMUAN {{ item.session_number }}</td>
-            <!-- <td class="p-3 font-semibold">{{ item.topic || '-' }}</td> -->
             <td class="p-3 font-semibold">{{ item.session_date }}</td>
             <td class="p-3 font-semibold">{{ item.start_time }} - {{ item.end_time }}</td>
 
@@ -404,3 +418,7 @@ const konfirmasiHapus = async () => {
     </div>
   </adminLayout>
 </template>
+
+<style scoped>
+/* Styling opsional jika dibutuhkan tetap aman */
+</style>
