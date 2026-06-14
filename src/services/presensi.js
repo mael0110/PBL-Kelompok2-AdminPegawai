@@ -31,9 +31,35 @@ export function presensiService() {
     }
   }
 
+  async function presensiDosen(payload) {
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await axios.post(
+        `https://be.karlearn.site/api/presensi/pegawai`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("✅ Response presensi:", res.data);
+      return res.data;
+
+    } catch (error) {
+      console.log("❌ Gagal presensi API:", error.response?.data || error);
+      throw error;
+    }
+  }
+
   return {
     presensi,
     getPresensi,
+    presensiDosen,
     meta
   };
 }
