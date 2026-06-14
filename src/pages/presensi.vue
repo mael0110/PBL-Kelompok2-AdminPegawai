@@ -23,7 +23,7 @@ onMounted(async () => {
   updateCounts();
 });
 
-// FlatMap semua pegawai dari setiap sesi
+// FlatMap semua pegawai dari setiap sesi + Sorting Terbaru ke Terlama
 const filteredPresensi = computed(() => {
   const allPegawai = presensi.value.flatMap(sess =>
     (sess.pegawai || []).map(p => ({
@@ -34,7 +34,8 @@ const filteredPresensi = computed(() => {
     }))
   );
 
-  return allPegawai.filter(item => {
+  // Proses filter data pencarian, status, dan tanggal
+  const hasilFilter = allPegawai.filter(item => {
     const keyword = search.value.toLowerCase();
 
     const cocokSearch =
@@ -50,6 +51,11 @@ const filteredPresensi = computed(() => {
       filterTanggal.value === "" || item.sesi_created_at === filterTanggal.value;
 
     return cocokSearch && cocokStatus && cocokTanggal;
+  });
+
+  // FIX: Urutkan hasil filter dari tanggal terbaru sampai terlama
+  return hasilFilter.sort((a, b) => {
+    return new Date(b.sesi_created_at) - new Date(a.sesi_created_at);
   });
 });
 
@@ -155,7 +161,7 @@ const namaField = (field) => {
     <table class="table-dashboard w-full text-sm">
       <thead>
         <tr class="bg-blue-200 font-semibold border-b border-gray-200">
-          <th class="p-3 text-letf">NO</th>
+          <th class="p-3 text-[12px]">NO</th>
           <th class="p-3 text-left">NAMA PEGAWAI</th>
           <th class="p-3 text-left">EMAIL</th>
           <th class="p-3 text-left">TANGGAL</th>
@@ -216,20 +222,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
-
-/* OPTION DEFAULT */
 select option {
   background: white;
   color: black;
 }
 
-/* OPTION SAAT HOVER */
 select option:hover {
   background: #2563eb;
   color: white;
 }
 
-/* OPTION SAAT DIPILIH */
 select option:checked {
   background: #2563eb;
   color: white;
