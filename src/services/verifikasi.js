@@ -5,16 +5,22 @@ export function verifikasiService() {
   const verifikasi = ref([]);
   const meta = ref(null);
 
-  async function getVerifikasi(page = 1) {
+  // FIX: Menambahkan parameter search dan status agar dikirim ke API backend
+  async function getVerifikasi(page = 1, search = "", status = "") {
     try {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(`/change-requests`, {
-        params: { page },
+        // Mengirimkan parameter sesuai requirement API
+        params: { 
+          page, 
+          search: search || undefined, // Jika kosong, tidak akan dikirim ke API
+          status: status || undefined  // Jika kosong, tidak akan dikirim ke API
+        },
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log("Mengambil verifikasi page:", page);
+      console.log("Mengambil verifikasi page:", page, "| Search:", search, "| Status:", status);
       console.log("Response meta:", res.data.meta);
 
       verifikasi.value = res.data.data;
@@ -79,13 +85,15 @@ export function verifikasiService() {
 
   async function getVerifikasiById(id) {
     try {
-      // Ambil semua verifikasi
+      const token = localStorage.getItem("token");
       let allData = [];
       let page = 1;
       let lastPage = 1;
 
       do {
-        const res = await axios.get(`/change-requests?page=${page}`);
+        const res = await axios.get(`/change-requests?page=${page}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         allData = [...allData, ...res.data.data];
         lastPage = res.data.meta.last_page;
         page++;
@@ -125,7 +133,10 @@ export function verifikasiService() {
 
   async function getVerifikasiTerbaru() {
     try {
-      const res = await axios.get("/change-requests/info/newly");
+      const token = localStorage.getItem("token");
+      const res = await axios.get("/change-requests/info/newly", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       return res.data.data;
     } catch (error) {
@@ -136,12 +147,15 @@ export function verifikasiService() {
 
   async function getAllVerifikasi() {
     try {
+      const token = localStorage.getItem("token");
       let allData = [];
       let page = 1;
       let lastPage = 1;
 
       do {
-        const res = await axios.get(`/change-requests?page=${page}`);
+        const res = await axios.get(`/change-requests?page=${page}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         allData = [...allData, ...res.data.data];
         lastPage = res.data.meta.last_page;

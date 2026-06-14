@@ -1,50 +1,51 @@
 <script setup>
 import AdminLayout from "./adminLayout.vue";
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { verifikasiService } from "../services/verifikasi";
 import { Search, Filter, CalendarDays } from "lucide-vue-next";
-import { usePages } from "../store/page.js";
 
 const router = useRouter();
 const route = useRoute();
-
-const currentPage = ref(route.query.page ? Number(route.query.page) : 1);
-
-const { meta, getVerifikasi } = verifikasiService();
-
-const page = usePages();
 const search = ref("");
 const filterStatus = ref("");
 const filterTanggal = ref("");
+const currentPage = ref(1);
+
+// Gunakan fungsi dan data state langsung dari verifikasiService (Sama seperti pegawai.vue)
+const { verifikasi, meta, getVerifikasi } = verifikasiService();
 
 onMounted(async () => {
-  await page.getVerifikasi(page.page);
+  const page = route.query.page ? Number(route.query.page) : 1;
+  currentPage.value = page;
+
+  // Ambil data awal berdasarkan page saat ini, search kosong, status kosong
+  await getVerifikasi(currentPage.value, search.value, filterStatus.value);
 });
 
-const goPage = async (pages) => {
-  page.page = pages;
-  currentPage.value = page.page;
-  await page.getVerifikasi(page.page);
-  router.replace({ query: { page } }); // update query URL agar reload tetap di page itu
+const goPage = async (page) => {
+  currentPage.value = page;
+  await getVerifikasi(page, search.value, filterStatus.value);
 };
 
-// Filtered view
+// Watcher untuk input search (Sama seperti pegawai.vue)
+watch(search, async (newValue) => {
+  await getVerifikasi(1, newValue, filterStatus.value);
+});
+
+// Watcher untuk filter status jika berubah
+watch(filterStatus, async (newValue) => {
+  await getVerifikasi(1, search.value, newValue);
+});
+
+// View filtering khusus tanggal secara lokal agar tidak bentrok dengan server
 const filteredVerifikasi = computed(() => {
-  return page.data.filter((item) => {
-    const keyword = search.value.toLowerCase();
-
-    const cocokSearch =
-      item.employee?.employee_name?.toLowerCase().includes(keyword) ||
-      item.employee?.nip?.toLowerCase().includes(keyword);
-
-    const cocokStatus =
-      filterStatus.value === "" || item.status === filterStatus.value;
-
+  if (!verifikasi.value) return [];
+  return verifikasi.value.filter((item) => {
     const cocokTanggal =
       filterTanggal.value === "" || item.request_date === filterTanggal.value;
 
-    return cocokSearch && cocokStatus && cocokTanggal;
+    return cocokTanggal;
   });
 });
 
@@ -160,7 +161,7 @@ const namaField = (field) => {
                   @click="
                     router.push({
                       path: `/verifikasi/edit/${item.id}`,
-                      query: { page: currentPage.value },
+                      query: { page: currentPage },
                     })
                   "
                   class="w-[90px] inline-block text-center bg-blue-900 hover:bg-blue-950 text-white px-4 py-2 rounded-lg text-xs"
@@ -173,9 +174,9 @@ const namaField = (field) => {
         </table>
       </div>
 
-      <div v-if="page.meta" class="flex justify-center gap-2 mt-4">
+      <div v-if="meta" class="flex justify-center gap-2 mt-4">
         <button
-          v-for="link in page.meta.links"
+          v-for="link in meta.links"
           :key="link.label"
           :disabled="!link.url"
           @click="link.page && goPage(link.page)"
