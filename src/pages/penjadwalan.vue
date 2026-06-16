@@ -275,15 +275,15 @@ const konfirmasiHapus = async () => {
 
 <template>
   <adminLayout>
-    <h2 class="text-2xl font-bold mb-6">
-      PENJADWALAN SESI PERKULIAHAN
-    </h2>
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold">
+        PENJADWALAN SESI PERKULIAHAN
+      </h2>
 
-    <div class="flex justify-end mb-4">
-      <button 
-        @click="showModalPengampu = true" 
-        type="button" 
-        class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold text-sm shadow transition-colors"
+      <button
+        @click="showModalPengampu = true"
+        type="button"
+        class="flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded-lg font-semibold text-sm shadow transition-colors"
       >
         <UserPlus :size="16" />
         Daftarkan Dosen Pengampu
@@ -496,10 +496,10 @@ const konfirmasiHapus = async () => {
           </div>
 
           <div class="flex justify-end gap-2 pt-3 border-t mt-5">
-            <button @click="showModalPengampu = false" type="button" class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-semibold">
+            <button @click="showModalPengampu = false" type="button" class="bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded-lg text-sm font-semibold">
               Batal
             </button>
-            <button :disabled="loadingPengampu" type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:bg-gray-400">
+            <button :disabled="loadingPengampu" type="submit" class="bg-green-600 hover:bg-green-500 text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:bg-gray-400">
               {{ loadingPengampu ? "Memproses..." : "Simpan Pengampu" }}
             </button>
           </div>
