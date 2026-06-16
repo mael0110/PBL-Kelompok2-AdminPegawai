@@ -27,6 +27,46 @@ export function penjadwalanService() {
     }
   }
 
+  async function getLecturers() {
+    try {
+      let allEmployees = [];
+      let currentPage = 1;
+      let hasMorePages = true;
+
+      while (hasMorePages) {
+        const res = await axios.get(`https://api-pegawai-4a.akufarish.my.id:1234/api/employees?page=${currentPage}`);
+        
+        // Ambil data array dari halaman aktif saat ini
+        const pageData = res.data.data || [];
+        allEmployees = [...allEmployees, ...pageData];
+
+        // Ambil info pagination meta
+        const meta = res.data.meta;
+        if (meta && currentPage < meta.last_page) {
+          currentPage++; // Jika masih ada halaman selanjutnya, lanjut looping
+        } else {
+          hasMorePages = false; // Jika sudah mencapai halaman terakhir, stop looping
+        }
+      }
+
+      console.log(`Berhasil memuat total ${allEmployees.length} data dosen.`);
+      return allEmployees;
+    } catch (error) {
+      console.log("Gagal ambil seluruh data dosen/employees:", error.response?.data || error);
+      return [];
+    }
+  }
+
+  async function getClasses() {
+    try {
+      const res = await axios.get("https://be.karlearn.site/api/kelas");
+      return res.data.data?.items || res.data.data || [];
+    } catch (error) {
+      console.log("Gagal ambil seluruh master kelas:", error.response?.data || error);
+      return [];
+    }
+  }
+
   async function getProdi() {
     try {
       const res = await axios.get("https://be.karlearn.site/api/prodi");
@@ -63,7 +103,7 @@ export function penjadwalanService() {
     console.log("Response jadwal:", res.data);
 
     sesiKelas.value = res.data.data || [];
-    meta.value = res.data.meta; // pastikan meta disimpan setiap page
+    meta.value = res.data.meta; 
 
     return res.data.data || [];
   } catch (error) {
@@ -122,6 +162,8 @@ export function penjadwalanService() {
     meta,
     generateSesi,
     getCourses,
+    getLecturers, // Di-export agar Vue bisa memanggil API pegawai baru ini
+    getClasses, 
     getProdi,
     getKelasByProdi,
     getPengampuByKelas,

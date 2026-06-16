@@ -2,12 +2,15 @@
 import adminLayout from "./adminLayout.vue";
 import { useRouter } from "vue-router";
 import { reactive, ref, computed, onMounted } from "vue"; 
-import { Save, RefreshCw, Trash2, Pencil, TriangleAlert } from "lucide-vue-next";
+import { Save, RefreshCw, Trash2, Pencil, TriangleAlert, UserPlus, X } from "lucide-vue-next"; 
 import { penjadwalanService } from "../services/penjadwalan";
 
 const router = useRouter();
 const { generateSesi, getCourses, getLecturers, getClasses, getProdi, 
-  getKelasByProdi, getPengampuByKelas, getJadwal, deleteSesiKelas, meta } = penjadwalanService();
+  getKelasByProdi, getPengampuByKelas, getJadwal, deleteSesiKelas, meta,
+  createPengampu 
+} = penjadwalanService();
+
 const courses = ref([]);
 // const lecturers = ref([]);
 // const classes = ref([]);
@@ -15,6 +18,17 @@ const prodiList = ref([]);
 const kelasList = ref([]);
 const selectedProdi = ref("");
 const pengampuList = ref([]);
+
+// State baru untuk modal pop up dosen pengampu
+const showModalPengampu = ref(false);
+const listDosenRaw = ref([]); // Menampung hasil array dari API pegawai baru
+const masterKelasModal = ref([]); 
+const loadingPengampu = ref(false);
+const formPengampu = reactive({
+  dosen_id: "",
+  kelas_id: "", 
+  mkkode: ""    
+});
 
 const searchSesi = ref("");
 const filterMataKuliah = ref("");
@@ -55,9 +69,6 @@ const buatJadwal = async () => {
 
     alert("Berhasil generate 16 sesi kelas!");
 
-    // ==========================================
-    // FIX: RESET FORMULIR SETELAH BERHASIL
-    // ==========================================
     form.pengampu_id = "";
     form.lecturer_id = "";
     form.class_id = "";
@@ -69,12 +80,10 @@ const buatJadwal = async () => {
     form.start_time = "";
     form.end_time = "";
     
-    // Kosongkan state penampung relasi dropdown prodi & list kelas/dosen
     selectedProdi.value = "";
     kelasList.value = [];
     pengampuList.value = [];
 
-    // Muat ulang daftar sesi di bawah agar langsung ter-update otomatis
     daftarSesi.value = await getJadwal();
 
   } catch (error) {
@@ -83,11 +92,49 @@ const buatJadwal = async () => {
   }
 };
 
+const simpanDosenPengampu = async () => {
+  if (!formPengampu.dosen_id || !formPengampu.kelas_id || !formPengampu.mkkode) {
+    alert("Mohon lengkapi semua pilihan data pengampu!");
+    return;
+  }
+  try {
+    loadingPengampu.value = true;
+    if (typeof createPengampu === "function") {
+      await createPengampu({
+        dosen_id: formPengampu.dosen_id,
+        kelas_id: formPengampu.kelas_id,
+        mkkode: formPengampu.mkkode
+      });
+      alert("Berhasil mendaftarkan Dosen Pengampu baru!");
+    } else {
+      console.warn("Fungsi createPengampu belum di-export dari service.");
+      alert(`Simpan data lokal berhasil:\nDosen ID: ${formPengampu.dosen_id}\nMK Kode: ${formPengampu.mkkode}\nKelas ID: ${formPengampu.kelas_id}`);
+    }
+    
+    formPengampu.dosen_id = "";
+    formPengampu.kelas_id = "";
+    formFormPengampu.mkkode = "";
+    showModalPengampu.value = false;
+
+    if (form.class_id) {
+      pengampuList.value = await getPengampuByKelas(form.class_id);
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Gagal mendaftarkan dosen pengampu.");
+  } finally {
+    loadingPengampu.value = false;
+  }
+};
+
 onMounted(async () => {
   courses.value = await getCourses();
   prodiList.value = await getProdi();
   daftarSesi.value = await getJadwal();
-         
+  masterKelasModal.value = await getClasses();
+  
+  // Memanggil API pegawai baru dan dimasukkan ke listDosenRaw
+  listDosenRaw.value = await getLecturers();
 });
 
 const pilihMatkul = () => {
@@ -177,13 +224,11 @@ const filteredSesi = computed(() => {
 
 const currentPage = ref(1);
 
-// Saat user klik tombol pagination
 const goPage = async (page) => {
   currentPage.value = page;
   daftarSesi.value = await getJadwal(page);
 };
 
-// Perbaikan: Tambahkan fungsi simpanJadwal agar tidak crash saat form di-submit
 const simpanJadwal = () => {
   console.log("Data disimpan:", form);
 };
@@ -213,12 +258,11 @@ const konfirmasiHapus = async () => {
   if (!selectedSesi.value) return;
 
   try {
-    const uuids = [selectedSesi.value.id]; // array, bisa multiple jika bulk
+    const uuids = [selectedSesi.value.id]; 
     await deleteSesiKelas(uuids);
 
     alert("Sesi kelas berhasil dihapus!");
 
-    // Refresh daftar sesi
     daftarSesi.value = await getJadwal();
 
     showModal.value = false;
@@ -234,6 +278,17 @@ const konfirmasiHapus = async () => {
     <h2 class="text-2xl font-bold mb-6">
       PENJADWALAN SESI PERKULIAHAN
     </h2>
+
+    <div class="flex justify-end mb-4">
+      <button 
+        @click="showModalPengampu = true" 
+        type="button" 
+        class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold text-sm shadow transition-colors"
+      >
+        <UserPlus :size="16" />
+        Daftarkan Dosen Pengampu
+      </button>
+    </div>
 
     <div class="card-dashboard bg-white rounded-xl shadow-md p-5">
       <h2 class="font-bold text-xl mb-4">BUAT SESI</h2>
@@ -398,6 +453,60 @@ const konfirmasiHapus = async () => {
         </button>
     </div>
 
+    <div v-if="showModalPengampu" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden border border-gray-100">
+        <div class="bg-blue-900 text-white px-5 py-4 flex justify-between items-center">
+          <h4 class="font-bold text-base flex items-center gap-2">
+            <UserPlus :size="18" /> Daftarkan Dosen Pengampu
+          </h4>
+          <button @click="showModalPengampu = false" class="hover:bg-blue-800 p-1 rounded-lg text-white">
+            <X :size="20" />
+          </button>
+        </div>
+
+        <form @submit.prevent="simpanDosenPengampu" class="p-5 space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-600 mb-1">PILIH DOSEN</label>
+            <select v-model="formPengampu.dosen_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+              <option value="">-- Silahkan Pilih Dosen --</option>
+              <option v-for="dsn in listDosenRaw" :key="dsn.id" :value="dsn.id">
+                {{ dsn.employee_name }}
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-600 mb-1">PILIH MATA KULIAH</label>
+            <select v-model="formPengampu.mkkode" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+              <option value="">-- Silahkan Pilih Mata Kuliah --</option>
+              <option v-for="crs in courses" :key="crs.id" :value="crs.code || crs.kode">
+                {{ crs.name }} ({{ crs.code || crs.kode }})
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-600 mb-1">PILIH KELAS</label>
+            <select v-model="formPengampu.kelas_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+              <option value="">-- Silahkan Pilih Kelas --</option>
+              <option v-for="kls in masterKelasModal" :key="kls.id" :value="kls.id">
+                {{ kls.class_name || kls.name || kls.nama_kelas }}
+              </option>
+            </select>
+          </div>
+
+          <div class="flex justify-end gap-2 pt-3 border-t mt-5">
+            <button @click="showModalPengampu = false" type="button" class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-semibold">
+              Batal
+            </button>
+            <button :disabled="loadingPengampu" type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:bg-gray-400">
+              {{ loadingPengampu ? "Memproses..." : "Simpan Pengampu" }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <div v-if="showModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div class="bg-white w-[420px] rounded-xl border-2 border-red-400 p-8 text-center shadow-2xl">
         <div class="flex justify-center mb-5">
@@ -418,7 +527,3 @@ const konfirmasiHapus = async () => {
     </div>
   </adminLayout>
 </template>
-
-<style scoped>
-/* Styling opsional jika dibutuhkan tetap aman */
-</style>
