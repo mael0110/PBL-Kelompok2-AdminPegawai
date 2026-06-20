@@ -9,7 +9,6 @@ const search = ref("");
 const filterStatus = ref("");
 const filterTanggal = ref("");
 
-// Card counts untuk Hadir, Izin, Alpa, Sakit
 const cardCounts = ref({
   hadir: 0,
   izin: 0,
@@ -17,13 +16,11 @@ const cardCounts = ref({
   sakit: 0
 });
 
-// Ambil data saat mounted
 onMounted(async () => {
   await getPresensi();
   updateCounts();
 });
 
-// FlatMap semua pegawai dari setiap sesi + Sorting Terbaru ke Terlama
 const filteredPresensi = computed(() => {
   const allPegawai = presensi.value.flatMap(sess =>
     (sess.pegawai || []).map(p => ({
@@ -34,13 +31,13 @@ const filteredPresensi = computed(() => {
     }))
   );
 
-  // Proses filter data pencarian, status, dan tanggal
   const hasilFilter = allPegawai.filter(item => {
     const keyword = search.value.toLowerCase();
 
     const cocokSearch =
       item.name.toLowerCase().includes(keyword) ||
       item.email.toLowerCase().includes(keyword) ||
+      (item.nip && item.nip.toLowerCase().includes(keyword)) ||
       item.detail_id?.toLowerCase().includes(keyword);
 
     const cocokStatus =
@@ -53,7 +50,6 @@ const filteredPresensi = computed(() => {
     return cocokSearch && cocokStatus && cocokTanggal;
   });
 
-  // FIX: Urutkan hasil filter dari tanggal terbaru sampai terlama
   return hasilFilter.sort((a, b) => {
     return new Date(b.sesi_created_at) - new Date(a.sesi_created_at);
   });
@@ -85,7 +81,6 @@ const namaField = (field) => {
   <h1 class="text-2xl font-bold">PRESENSI</h1>
   <p class="flex text-sm gap-4 mb-6">Data Kehadiran Pegawai</p>
 
-  <!-- Filter search, status, tanggal -->
   <div class="flex gap-4 mb-6">
     <div class="relative flex-1 text-sm">
       <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400" :size="18"/>
@@ -113,7 +108,6 @@ const namaField = (field) => {
     </div>
   </div>
 
-  <!-- Dashboard cards -->
   <div class="grid grid-cols-4 gap-4 mb-6">
     <div class="card-dashboard bg-green-100 rounded-xl shadow-md px-4 py-3 h-[100px] flex flex-col justify-center shadow border border-green-100">
       <p class="text-center text-[16px] font-bold mb-2">HADIR</p>
@@ -152,7 +146,6 @@ const namaField = (field) => {
     </div>
   </div>
 
-  <!-- Tabel Presensi -->
   <div class="bg-white rounded-xl shadow-md px-5">
     <div class="px-2 py-3">
       <h2 class="font-bold text-sm">DAFTAR PRESENSI</h2>
@@ -163,7 +156,7 @@ const namaField = (field) => {
         <tr class="bg-blue-200 font-semibold border-b border-gray-200">
           <th class="p-3 text-[12px]">NO</th>
           <th class="p-3 text-left">NAMA PEGAWAI</th>
-          <th class="p-3 text-left">EMAIL</th>
+          <th class="p-3 text-left">NIP</th>
           <th class="p-3 text-left">TANGGAL</th>
           <th class="p-3 text-left">STATUS</th>
         </tr>
@@ -173,7 +166,7 @@ const namaField = (field) => {
         <tr v-for="(item, index) in filteredPresensi" :key="item.detail_id" class="odd:bg-gray-50 even:bg-white font-semibold border-b border-gray-200">
           <td class="p-3 text-semibold text-center">{{ index + 1 }}</td>
           <td class="p-3 text-semibold">{{ item.name || '-' }}</td>
-          <td class="p-3 text-semibold">{{ item.email || '-' }}</td>
+          <td class="p-3 text-semibold">{{ item.nip || '-' }}</td>
           <td class="p-3 text-semibold">{{ item.sesi_created_at || '-' }}</td>
           <td class="p-3 font-semibold text-left">
             <span
@@ -192,7 +185,6 @@ const namaField = (field) => {
       </tbody>
     </table>
 
-    <!-- Pagination -->
     <div v-if="meta && meta.total_pages > 1" class="flex justify-center gap-2 mt-4">
       <button
         v-for="page in meta.total_pages"

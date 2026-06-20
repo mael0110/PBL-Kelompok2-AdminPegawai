@@ -36,16 +36,14 @@ export function penjadwalanService() {
       while (hasMorePages) {
         const res = await axios.get(`https://api-pegawai-4a.akufarish.my.id:1234/api/employees?page=${currentPage}`);
         
-        // Ambil data array dari halaman aktif saat ini
         const pageData = res.data.data || [];
         allEmployees = [...allEmployees, ...pageData];
 
-        // Ambil info pagination meta
         const meta = res.data.meta;
         if (meta && currentPage < meta.last_page) {
-          currentPage++; // Jika masih ada halaman selanjutnya, lanjut looping
+          currentPage++;
         } else {
-          hasMorePages = false; // Jika sudah mencapai halaman terakhir, stop looping
+          hasMorePages = false;
         }
       }
 
@@ -194,7 +192,7 @@ export function penjadwalanService() {
     meta,
     generateSesi,
     getCourses,
-    getLecturers, // Di-export agar Vue bisa memanggil API pegawai baru ini
+    getLecturers, 
     getClasses, 
     getProdi,
     getKelasByProdi,
