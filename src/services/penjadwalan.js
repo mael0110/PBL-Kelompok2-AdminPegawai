@@ -157,6 +157,38 @@ export function penjadwalanService() {
     }
   }
 
+  async function createPengampu(payload) {
+  const token = localStorage.getItem("token");
+
+  try {
+    const res = await axios.post(
+      "https://be.karlearn.site/api/pengampu",
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("✅ Pengampu berhasil dibuat:", res.data);
+    return res.data;
+
+  } catch (error) {
+    console.error("❌ Gagal create pengampu:", error.response?.data || error);
+
+    // OPTIONAL: tampilkan pesan backend
+    if (error.response?.data?.message) {
+      alert(error.response.data.message);
+    }
+
+    throw error;
+  }
+}
+
+
   return {
     sesiKelas,
     meta,
@@ -171,5 +203,6 @@ export function penjadwalanService() {
     getJadwalById,
     updateJadwal,
     deleteSesiKelas,
+    createPengampu
   };
 }

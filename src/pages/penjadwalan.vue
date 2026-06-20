@@ -20,6 +20,7 @@ const selectedProdi = ref("");
 const pengampuList = ref([]);
 
 // State baru untuk modal pop up dosen pengampu
+const showSuccessModal = ref(false);
 const showModalPengampu = ref(false);
 const listDosenRaw = ref([]); // Menampung hasil array dari API pegawai baru
 const masterKelasModal = ref([]); 
@@ -67,7 +68,7 @@ const buatJadwal = async () => {
 
     await generateSesi(payload);
 
-    alert("Berhasil generate 16 sesi kelas!");
+    showSuccessModal.value = true;
 
     form.pengampu_id = "";
     form.lecturer_id = "";
@@ -103,17 +104,18 @@ const simpanDosenPengampu = async () => {
       await createPengampu({
         dosen_id: formPengampu.dosen_id,
         kelas_id: formPengampu.kelas_id,
-        mkkode: formPengampu.mkkode
+        mkkode: formFormPengampu.mkkode
       });
-      alert("Berhasil mendaftarkan Dosen Pengampu baru!");
-    } else {
-      console.warn("Fungsi createPengampu belum di-export dari service.");
-      alert(`Simpan data lokal berhasil:\nDosen ID: ${formPengampu.dosen_id}\nMK Kode: ${formPengampu.mkkode}\nKelas ID: ${formPengampu.kelas_id}`);
-    }
+      showSuccessModal.value = true;
+    } 
+    // else {
+    //   console.warn("Fungsi createPengampu belum di-export dari service.");
+    //   alert(`Simpan data lokal berhasil:\nDosen ID: ${formPengampu.dosen_id}\nMK Kode: ${formPengampu.mkkode}\nKelas ID: ${formPengampu.kelas_id}`);
+    // }
     
     formPengampu.dosen_id = "";
     formPengampu.kelas_id = "";
-    formFormPengampu.mkkode = "";
+    formPengampu.mkkode = "";
     showModalPengampu.value = false;
 
     if (form.class_id) {
@@ -126,6 +128,11 @@ const simpanDosenPengampu = async () => {
     loadingPengampu.value = false;
   }
 };
+
+setTimeout(async () => {
+  showSuccessModal.value = false;
+
+}, 2000);
 
 onMounted(async () => {
   courses.value = await getCourses();
@@ -271,6 +278,14 @@ const konfirmasiHapus = async () => {
     alert("Gagal menghapus sesi kelas!");
   }
 };
+
+const formatProdi = (text) => {
+  if (!text) return "-";
+
+  return text
+    .replace(/-/g, " ") // ganti "-" jadi spasi
+    .replace(/\b\w/g, (c) => c.toUpperCase()); // kapital tiap kata
+};
 </script>
 
 <template>
@@ -311,7 +326,7 @@ const konfirmasiHapus = async () => {
           <label class="block text-sm font-semibold mb-1">Prodi</label>
           <select v-model="selectedProdi" @change="pilihProdi" class="w-full border rounded-lg px-3 py-2">
             <option value="">Pilih Prodi</option>
-            <option v-for="item in prodiList" :key="item.id" :value="item.name">{{ item.name }}</option>
+            <option v-for="item in prodiList" :key="item.id" :value="item.name">{{ formatProdi(item.name) }}</option>
           </select>
         </div>
 
@@ -342,9 +357,13 @@ const konfirmasiHapus = async () => {
         </div>
 
         <div class="flex justify-end gap-4">
+          <button type="submit" class="flex h-[40px] items-center gap-2 bg-red-500 hover:bg-red-400 text-white px-6 py-2 rounded-lg font-semibold">
+            Batal
+          </button>
+
           <button type="submit" class="flex h-[40px] items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold">
             <Save :size="18" />
-            Buat Jadwal
+            Simpan
           </button>
         </div>
       </form>
@@ -357,15 +376,15 @@ const konfirmasiHapus = async () => {
           v-model="searchSesi"
           type="text"
           placeholder="Cari mata kuliah, kelas, atau dosen..."
-          class="flex-1 border rounded-lg px-4 py-2"
+          class="flex-1 border border-gray-300 rounded-lg px-4 py-2"
         />
 
-        <select v-model="filterMataKuliah" class="border rounded-lg px-4 py-2 w-52">
+        <select v-model="filterMataKuliah" class="border rounded-lg px-4 py-2 w-52 text-white bg-blue-900">
           <option value="">Semua Mata Kuliah</option>
           <option value="Pemrograman Web">Pemrograman Web</option>
         </select>
 
-        <select v-model="filterKelas" class="border rounded-lg px-4 py-2 w-40">
+        <select v-model="filterKelas" class="border rounded-lg px-4 py-2 w-40 text-white bg-blue-900">
           <option value="">Semua Kelas</option>
           <option value="TI-4A">TI-4A</option>
         </select>
@@ -373,17 +392,8 @@ const konfirmasiHapus = async () => {
         <input
           v-model="filterTanggal"
           type="date"
-          class="border rounded-lg px-4 py-2"
+          class="border rounded-lg px-4 py-2 text-white bg-blue-900 items-white"
         />
-
-        <button
-          @click="refreshData"
-          type="button"
-          class="flex items-center gap-2 border rounded-lg px-4 py-2 hover:bg-gray-100"
-        >
-          <RefreshCw :size="16" />
-          Refresh
-        </button>
       </div>
 
       <table class="table-dashboard w-full text-sm">
@@ -412,13 +422,23 @@ const konfirmasiHapus = async () => {
             <td class="p-3 font-semibold">{{ item.start_time }} - {{ item.end_time }}</td>
 
             <td class="p-3">
-              <span class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold"
-              :class="
-                item.status === 'open'
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-yellow-100 text-yellow-700'
-              ">
-                {{ item.status }}
+              <span 
+                v-if="item.status === 'opened' || item.status === 'open'"
+                class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold bg-yellow-500 text-white"
+              >
+                Berjalan
+              </span>
+              <span 
+                v-else-if="(item.status === 'closed' || item.status === 'close') && item.topic && item.topic !== '' && item.topic !== '-'"
+                class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold bg-green-600 text-white"
+              >
+                Selesai
+              </span>
+              <span 
+                v-else
+                class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold bg-blue-900 text-white"
+              >
+                Terjadwal
               </span>
             </td>
 
@@ -500,7 +520,7 @@ const konfirmasiHapus = async () => {
               Batal
             </button>
             <button :disabled="loadingPengampu" type="submit" class="bg-green-600 hover:bg-green-500 text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:bg-gray-400">
-              {{ loadingPengampu ? "Memproses..." : "Simpan Pengampu" }}
+              {{ loadingPengampu ? "Memproses..." : "Simpan" }}
             </button>
           </div>
         </form>
@@ -513,7 +533,7 @@ const konfirmasiHapus = async () => {
           <TriangleAlert class="text-red-500" :size="80" stroke-width="2.5" />
         </div>
 
-        <h2 class="text-2xl font-bold mb-6">Yakin Ingin Menghapus, <br>{{  selectedSesi ? selectedSesi.pertemuan : ""  }}</h2>
+        <h2 class="text-2xl font-bold mb-6">Yakin Ingin Menghapus, <br>Jadwal Sesi ini</h2>
 
         <div class="flex justify-center gap-3">
           <button @click="konfirmasiHapus(item)" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg text-sm transition-colors">
@@ -523,6 +543,34 @@ const konfirmasiHapus = async () => {
             Kembali
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div
+      v-if="showSuccessModal"
+      class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+    >
+      <div class="bg-white w-[320px] rounded-xl shadow-lg p-6 text-center animate-fadeIn">
+
+        <!-- ICON CHECK -->
+        <div class="mx-auto w-[90px] h-[90px] flex items-center justify-center rounded-full border-4 border-green-500 mb-4">
+          <svg
+            class="w-14 h-14 text-green-500"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+
+        <!-- TEXT -->
+        <h2 class="text-lg font-semibold text-gray-700">
+          Data berhasil disimpan
+        </h2>
+
       </div>
     </div>
   </adminLayout>

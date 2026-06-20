@@ -38,13 +38,13 @@ onMounted(async () => {
   }
 });
 
+const showSuccessModal = ref(false);
 const simpanVerifikasi = async () => {
   try {
     const id = route.params.id;
     await updateVerifikasi(id, form.status);
 
-    alert("Status verifikasi berhasil diubah!");
-
+    showSuccessModal.value = true;
     // reload data current page supaya tetap di page itu
     await getVerifikasi(currentPage.value);
 
@@ -53,6 +53,10 @@ const simpanVerifikasi = async () => {
     alert("Gagal mengubah status!");
   }
 };
+
+setTimeout(async () => {
+  showSuccessModal.value = false;
+}, 2000);
 
 const batal = () => {
   // await getVerifikasi(currentPage.value);
@@ -140,6 +144,34 @@ const batal = () => {
             <Save/>SIMPAN
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div
+      v-if="showSuccessModal"
+      class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+    >
+      <div class="bg-white w-[320px] rounded-xl shadow-lg p-6 text-center animate-fadeIn">
+
+        <!-- ICON CHECK -->
+        <div class="mx-auto w-[90px] h-[90px] flex items-center justify-center rounded-full border-4 border-green-500 mb-4">
+          <svg
+            class="w-14 h-14 text-green-500"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+
+        <!-- TEXT -->
+        <h2 class="text-lg font-semibold text-gray-700">
+          Data berhasil disimpan
+        </h2>
+
       </div>
     </div>
   </adminLayout>

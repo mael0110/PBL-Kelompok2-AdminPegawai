@@ -11,6 +11,8 @@ const nipInput = ref(null);
 const nikInput = ref(null);
 const phoneInput = ref(null);
 
+const showSuccessModal = ref(false);
+
 const { createEmployee, meta, getEmployees } = employeesService();
 
 const {
@@ -137,7 +139,7 @@ const simpanPegawai = async () => {
       village_code: form.village_code,
     });
 
-    alert("Pegawai berhasil ditambahkan!");
+    showSuccessModal.value = true;
     await getEmployees();
 
     const lastPage = meta.value?.last_page || 1;
@@ -146,6 +148,15 @@ const simpanPegawai = async () => {
     console.log(error);
   }
 };
+
+setTimeout(async () => {
+  showSuccessModal.value = false;
+
+  await getEmployees();
+
+  const lastPage = meta.value?.last_page || 1;
+  // router.push({ path: "/pegawai", query: { page: lastPage } });
+}, 2000);
 
 const batal = () => {
   // Tetap menggunakan confirm agar data tidak hilang tidak sengaja
@@ -344,5 +355,33 @@ const batal = () => {
         </div>
       </form>
     </div>
+
+    <!-- SUCCESS MODAL -->
+  <div
+    v-if="showSuccessModal"
+    class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+  >
+    <div class="bg-white w-[320px] rounded-xl shadow-lg p-6 text-center animate-fadeIn">
+
+      <!-- ICON CHECK -->
+      <div class="mx-auto w-[90px] h-[90px] flex items-center justify-center rounded-full border-4 border-green-500 mb-4">
+        <svg
+          class="w-14 h-14 text-green-500"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="3"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+
+      <!-- TEXT -->
+      <h2 class="text-lg font-semibold text-gray-700">
+        Data berhasil disimpan
+      </h2>
+
+    </div>
+  </div>
   </AdminLayout>
 </template>

@@ -69,10 +69,16 @@ const fetchPresensiHariIni = async () => {
 // Fungsi submit absen mandiri admin
 const submitPresensi = async () => {
   if (!statusPresensi.value) return;
+
   loadingPresensi.value = true;
 
   try {
-    const payload = { status: statusPresensi.value };
+    const payload = {
+      status: statusPresensi.value.trim().toLowerCase()
+    };
+
+    console.log("SEND PAYLOAD:", payload);
+
     const res = await presensiDosen(payload);
 
     if (res?.success || res) {
@@ -80,8 +86,7 @@ const submitPresensi = async () => {
       localStorage.setItem("presensi_dosen_hari_ini", todayKey);
       showPresensiModal.value = false;
       statusPresensi.value = "";
-      
-      // Refresh grafik rekap agar langsung terupdate
+
       await fetchPresensiHariIni();
     }
   } catch (error) {
@@ -179,7 +184,7 @@ const namaField = (field) => {
         
         <div class="card-dashboard bg-white rounded-xl h-[220px] shadow-md p-5 flex flex-col justify-between">
           <div>
-            <p class="text-gray-400 text-[11px] mb-0.5">Presensi Kehadiran Admin/Pegawai</p>
+            <p class="text-gray-400 text-[11px] mb-0.5">Presensi Kehadiran Admin Pegawai</p>
             <p class="text-[13px] font-semibold text-gray-700">{{ tanggalHariIni }}</p>
           </div>
           

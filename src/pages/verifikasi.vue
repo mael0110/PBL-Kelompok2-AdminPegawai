@@ -147,11 +147,11 @@ const namaField = (field) => {
               <td class="p-2 font-semibold">{{ item.employee.nik }}</td>
               <td class="p-2 font-semibold text-left">
                 <span
-                  class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold"
+                  class="w-[110px] inline-block text-center text-white px-4 py-2 rounded-lg text-[12px] font-semibold"
                   :class="{
-                    'bg-[#22C55E]': item.status === 'approved',
-                    'bg-[#EF4444]': item.status === 'rejected',
-                    'bg-[#FACC15]': item.status === 'pending',
+                    'bg-green-600': item.status === 'approved',
+                    'bg-red-500': item.status === 'rejected',
+                    'bg-yellow-500': item.status === 'pending',
                   }"
                   >{{ namaField(item.status) }}
                 </span>

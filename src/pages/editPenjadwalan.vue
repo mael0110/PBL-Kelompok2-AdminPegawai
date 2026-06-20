@@ -1,6 +1,6 @@
 <script setup>
 import adminLayout from "./adminLayout.vue";
-import { reactive, onMounted } from "vue";
+import { reactive, onMounted, ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { Save } from "lucide-vue-next";
 import { penjadwalanService } from "../services/penjadwalan";
@@ -47,6 +47,7 @@ onMounted(async () => {
   form.end_time = data.end_time?.slice(0, 5) || "";
 });
 
+const showSuccessModal = ref(false);
 const simpanJadwal = async () => {
   try {
     const id = route.params.id;
@@ -69,13 +70,21 @@ const simpanJadwal = async () => {
 
     await updateJadwal(id, payload);
 
-    alert("Jadwal berhasil diupdate!");
-    router.push("/penjadwalan");
+    showSuccessModal.value = true;
+    setTimeout(async () => {
+      showSuccessModal.value = false;
+      router.push("/penjadwalan");
+    }, 2000);
+    
   } catch (error) {
     console.log("Error update:", error.response?.data || error);
     alert("Gagal update jadwal!");
   }
 };
+
+// setTimeout(async () => {
+//   showSuccessModal.value = false;
+// }, 2000);
 
 const batal = () => {
   router.push("/penjadwalan");
@@ -135,16 +144,44 @@ const batal = () => {
         </div>
 
         <div class="flex items-right gap-2 col-span-2 justify-end mt-4">
-          <button type="submit" class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition">
-            <Save :size="18" />
-            Simpan Jadwal
+          <button type="button" @click="batal" class="bg-red-500 hover:bg-red-400 text-white px-8 py-2 rounded-lg font-semibold transition">
+            BATAL
           </button>
 
-          <button type="button" @click="batal" class="bg-gray-500 hover:bg-gray-600 text-white px-8 py-2 rounded-lg font-semibold transition">
-            BATAL
+          <button type="submit" class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+            <Save :size="18" />
+            Simpan
           </button>
         </div>
       </form>
     </div>
+
+    <!-- SUCCESS MODAL -->
+  <div
+    v-if="showSuccessModal"
+    class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+  >
+    <div class="bg-white w-[320px] rounded-xl shadow-lg p-6 text-center animate-fadeIn">
+
+      <!-- ICON CHECK -->
+      <div class="mx-auto w-[90px] h-[90px] flex items-center justify-center rounded-full border-4 border-green-500 mb-4">
+        <svg
+          class="w-14 h-14 text-green-500"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="3"
+          viewBox="0 0 24 24"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+
+      <!-- TEXT -->
+      <h2 class="text-lg font-semibold text-gray-700">
+        Data berhasil disimpan
+      </h2>
+
+    </div>
+  </div>
   </adminLayout>
 </template>

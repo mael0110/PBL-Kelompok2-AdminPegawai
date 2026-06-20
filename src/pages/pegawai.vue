@@ -88,7 +88,7 @@ const namaField = (field) => {
 
         <button 
         @click="router.push('/pegawai/tambah')"
-        class="bg-blue-900 text-sm hover:bg-blue-950 text-white px-8 py-2 rounded-lg font-semibold transition">
+        class="bg-blue-900 text-sm hover:bg-blue-800 text-white px-8 py-2 rounded-lg font-semibold transition">
           TAMBAH
         </button>
         </div>
