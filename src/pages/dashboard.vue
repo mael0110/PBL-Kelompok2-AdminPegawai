@@ -269,7 +269,7 @@ const namaField = (field) => {
 
               <td class="p-3 text-center">
                 <span
-                  class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold"
+                  class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold text-white"
                   :class="{
                     'bg-green-600': item.status === 'approved',
                     'bg-red-500': item.status === 'rejected',
