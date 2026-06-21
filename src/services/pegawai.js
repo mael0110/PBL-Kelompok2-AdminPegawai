@@ -33,25 +33,41 @@ export function employeesService() {
   try {
     const token = localStorage.getItem("token");
 
-    const res = await axios.post(
-      "/employees",
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const res = await axios.post("/employees", payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-    console.log("Berhasil tambah pegawai:", res.data);
+    console.log("RESP EMPLOYEE:", res.data);
+
+    const employeeId = res.data?.data?.id;
+
+    if (!employeeId) {
+      throw new Error("employee id tidak ditemukan");
+    }
+
+    await axios.post("https://be.karlearn.site/api/users", {
+      detail_id: employeeId,
+      email: payload.nip + "@pegawai.com",
+      name: payload.employee_name || payload.name,
+      password: payload.nip,
+      role_name: "dosen", 
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`, 
+      }
+    });
+
+    console.log("ROLE DOSEN BERHASIL DIBUAT");
 
     return res.data;
+
   } catch (error) {
     console.log("Gagal tambah pegawai:", error.response?.data || error);
     throw error;
   }
-
- }
+}
 
  async function getEmployeeById(id) {
   const token = localStorage.getItem("token");

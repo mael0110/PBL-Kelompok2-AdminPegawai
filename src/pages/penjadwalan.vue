@@ -94,6 +94,7 @@ const buatJadwal = async () => {
 };
 
 const simpanDosenPengampu = async () => {
+  // 🟢 PERBAIKAN: Mengubah formFormPengampu.mkkode menjadi formPengampu.mkkode agar lolos validasi if
   if (!formPengampu.dosen_id || !formPengampu.kelas_id || !formPengampu.mkkode) {
     alert("Mohon lengkapi semua pilihan data pengampu!");
     return;
@@ -101,18 +102,16 @@ const simpanDosenPengampu = async () => {
   try {
     loadingPengampu.value = true;
     if (typeof createPengampu === "function") {
+      // 🟢 PERBAIKAN: Di sini juga dipastikan menggunakan formPengampu
       await createPengampu({
         dosen_id: formPengampu.dosen_id,
         kelas_id: formPengampu.kelas_id,
-        mkkode: formFormPengampu.mkkode
+        mkkode: formPengampu.mkkode
       });
       showSuccessModal.value = true;
     } 
-    // else {
-    //   console.warn("Fungsi createPengampu belum di-export dari service.");
-    //   alert(`Simpan data lokal berhasil:\nDosen ID: ${formPengampu.dosen_id}\nMK Kode: ${formPengampu.mkkode}\nKelas ID: ${formPengampu.kelas_id}`);
-    // }
     
+    // Reset form setelah sukses
     formPengampu.dosen_id = "";
     formPengampu.kelas_id = "";
     formPengampu.mkkode = "";

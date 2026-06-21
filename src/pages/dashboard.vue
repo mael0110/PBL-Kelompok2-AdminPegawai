@@ -66,7 +66,6 @@ const fetchPresensiHariIni = async () => {
   }
 };
 
-// Fungsi submit absen mandiri admin
 const submitPresensi = async () => {
   if (!statusPresensi.value) return;
 
@@ -87,7 +86,8 @@ const submitPresensi = async () => {
       showPresensiModal.value = false;
       statusPresensi.value = "";
 
-      await fetchPresensiHariIni();
+      // 🟢 PERBAIKAN: Mengubah fungsi typo/tidak terdefinisi menjadi pemanggilan fungsi kalender yang benar
+      await fetchSesiKalender();
     }
   } catch (error) {
     console.error("Error submit presensi admin:", error);

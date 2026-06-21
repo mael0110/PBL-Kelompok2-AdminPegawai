@@ -49,8 +49,6 @@ const konfirmasiHapus = async () => {
     showModal.value = false;
     selectedPegawai.value = null;
 
-    alert("Pegawai berhasil dihapus!");
-
     await getEmployees(currentPage.value, search.value);
   } catch (error) {
     alert("Gagal menghapus pegawai!");
