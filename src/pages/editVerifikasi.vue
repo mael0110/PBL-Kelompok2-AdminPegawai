@@ -22,6 +22,20 @@ const form = reactive({
   status: "",
 });
 
+// --- STATE UTK ALERT CUSTOM POP-UP ---
+const customAlert = ref({
+  show: false,
+  message: ""
+});
+
+const triggerAlert = (msg) => {
+  customAlert.value.message = msg;
+  customAlert.value.show = true;
+  setTimeout(() => {
+    customAlert.value.show = false;
+  }, 3000);
+};
+
 onMounted(async () => {
   const id = route.params.id;
   const data = await getVerifikasiById(id);
@@ -50,7 +64,8 @@ const simpanVerifikasi = async () => {
 
     router.push({ path: "/verifikasi", query: { page: currentPage.value } });
   } catch (error) {
-    alert("Gagal mengubah status!");
+    // Mengganti alert bawaan browser menjadi custom alert pop-up atas
+    triggerAlert("Gagal mengubah status!");
   }
 };
 
@@ -66,42 +81,44 @@ const batal = () => {
 
 <template>
   <adminLayout>
-    <p class="text-sm mb-2">
+    <div v-if="customAlert.show" class="fixed top-4 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-1.5 rounded shadow-lg text-[11px] z-[9999] transition-all duration-300">
+      {{ customAlert.message }}
+    </div>
+
+    <p class="text-[11px] mb-1.5 text-gray-500">
       <RouterLink :to="{ path: '/verifikasi', query: { page: currentPage.value } }" class="hover:underline">
         Verifikasi
       </RouterLink>
-      <span class="mx-2 text-gray-400">&gt;</span> Edit Verifikasi
+      <span class="mx-1 text-gray-400">&gt;</span> Edit Verifikasi
     </p>
 
-    <h1 class="text-2xl font-bold mb-3">EDIT VERIFIKASI</h1>
+    <h1 class="text-lg font-bold mb-4 text-gray-800">EDIT VERIFIKASI</h1>
 
-    <!-- form data pegawai -->
-    <div class="space-y-4">
-      <div class="card-dashboard bg-white rounded-xl overflow-hidden">
-        <div class="bg-blue-200 px-4 py-2 font-bold">DATA PEGAWAI</div>
-        <div class="p-4 grid grid-cols-2 gap-4">
+    <div class="space-y-3">
+      <div class="card-dashboard bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+        <div class="bg-blue-200 px-4 py-1.5 font-bold text-[11px] text-blue-950">DATA PEGAWAI</div>
+        <div class="p-3 grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-sm font-semibold mb-1">Nama</label>
-            <input v-model="form.employee_name" type="text" disabled class="w-full border rounded-lg px-3 py-2 bg-gray-50"/>
+            <label class="block text-[11px] font-semibold mb-1 text-gray-700">Nama</label>
+            <input v-model="form.employee_name" type="text" disabled class="w-full border rounded-md px-2.5 py-1.5 text-[11px] bg-gray-50 outline-none"/>
           </div>
           <div>
-            <label class="block text-sm font-semibold mb-1">NIP</label>
-            <input v-model="form.nip" type="text" class="w-full border rounded-lg px-3 py-2 bg-gray-50"/>
+            <label class="block text-[11px] font-semibold mb-1 text-gray-700">NIP</label>
+            <input v-model="form.nip" type="text" class="w-full border rounded-md px-2.5 py-1.5 text-[11px] bg-gray-50 outline-none"/>
           </div>
           <div>
-            <label class="block text-sm font-semibold mb-1">NIK</label>
-            <input v-model="form.nik" type="text" class="w-full border rounded-lg px-3 py-2 bg-gray-50"/>
+            <label class="block text-[11px] font-semibold mb-1 text-gray-700">NIK</label>
+            <input v-model="form.nik" type="text" class="w-full border rounded-md px-2.5 py-1.5 text-[11px] bg-gray-50 outline-none"/>
           </div>
         </div>
       </div>
 
-      <!-- form perubahan -->
-      <div class="card-dashboard bg-white rounded-xl overflow-hidden">
-        <div class="bg-blue-200 px-4 py-2 font-bold">FORM PERUBAHAN</div>
-        <div class="p-4 grid grid-cols-3 gap-4">
+      <div class="card-dashboard bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+        <div class="bg-blue-200 px-4 py-1.5 font-bold text-[11px] text-blue-950">FORM PERUBAHAN</div>
+        <div class="p-3 grid grid-cols-3 gap-3">
           <div>
-            <label class="block text-sm font-semibold mb-1">Field yang diubah</label>
-            <select v-model="form.field_name" @change="pilihField" class="w-full border rounded-lg px-3 py-2">
+            <label class="block text-[11px] font-semibold mb-1 text-gray-700">Field yang diubah</label>
+            <select v-model="form.field_name" @change="pilihField" class="w-full border rounded-md px-2.5 py-1.5 text-[11px] bg-white outline-none">
               <option value="">Pilih Field</option>
               <option value="nip">NIP</option>
               <option value="nik">NIK</option>
@@ -112,22 +129,21 @@ const batal = () => {
             </select>
           </div>
           <div>
-            <label class="block text-sm font-semibold mb-1">Data Lama</label>
-            <input v-model="form.old_value" readonly type="text" class="w-full border rounded-lg px-3 py-2"/>
+            <label class="block text-[11px] font-semibold mb-1 text-gray-700">Data Lama</label>
+            <input v-model="form.old_value" readonly type="text" class="w-full border rounded-md px-2.5 py-1.5 text-[11px] outline-none bg-white"/>
           </div>
           <div>
-            <label class="block text-sm font-semibold mb-1">Data Baru</label>
-            <input v-model="form.new_value" readonly type="text" class="w-full border rounded-lg px-3 py-2"/>
+            <label class="block text-[11px] font-semibold mb-1 text-gray-700">Data Baru</label>
+            <input v-model="form.new_value" readonly type="text" class="w-full border rounded-md px-2.5 py-1.5 text-[11px] outline-none bg-white"/>
           </div>
         </div>
       </div>
 
-      <!-- status & tombol -->
-      <div class="flex justify-between items-end mt-6">
-        <div class="card-dashboard bg-white rounded-xl  w-[300px]">
-          <div class="bg-blue-200 px-4 py-2 font-bold rounded-tl-xl rounded-tr-xl">STATUS</div>
-          <div class="p-4">
-            <select v-model="form.status" class="w-64 border rounded-lg px-3 py-2">
+      <div class="flex justify-between items-end mt-4">
+        <div class="card-dashboard bg-white rounded-xl w-[260px] border border-gray-100 shadow-sm">
+          <div class="bg-blue-200 px-4 py-1.5 font-bold text-[11px] text-blue-950 rounded-tl-xl rounded-tr-xl">STATUS</div>
+          <div class="p-3">
+            <select v-model="form.status" class="w-full border rounded-md px-2.5 py-1.5 text-[11px] bg-white outline-none">
               <option value="">Pilih Status</option>
               <option value="pending">Menunggu</option>
               <option value="approved">Disetujui</option>
@@ -136,28 +152,25 @@ const batal = () => {
           </div>
         </div>
 
-        <div class="flex justify-end gap-4">
-          <button type="button" @click="batal" class="bg-red-500 hover:bg-red-600 text-white px-8 py-2 rounded-lg font-semibold">
+        <div class="flex justify-end gap-3">
+          <button type="button" @click="batal" class="bg-red-500 hover:bg-red-600 text-white px-5 py-1.5 rounded-md text-[11px] font-semibold transition-colors">
             BATAL
           </button>
-          <button type="button" @click="simpanVerifikasi" class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-semibold transition">
-            <Save/>SIMPAN
+          <button type="button" @click="simpanVerifikasi" class="flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-md text-[11px] font-semibold transition">
+            <Save :size="14"/>SIMPAN
           </button>
         </div>
       </div>
     </div>
 
-    <!-- SUCCESS MODAL -->
     <div
       v-if="showSuccessModal"
       class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
     >
-      <div class="bg-white w-[320px] rounded-xl shadow-lg p-6 text-center animate-fadeIn">
-
-        <!-- ICON CHECK -->
-        <div class="mx-auto w-[90px] h-[90px] flex items-center justify-center rounded-full border-4 border-green-500 mb-4">
+      <div class="bg-white w-[260px] rounded-xl shadow-lg p-5 text-center animate-fadeIn">
+        <div class="mx-auto w-[60px] h-[60px] flex items-center justify-center rounded-full border-4 border-green-500 mb-3">
           <svg
-            class="w-14 h-14 text-green-500"
+            class="w-10 h-10 text-green-500"
             fill="none"
             stroke="currentColor"
             stroke-width="3"
@@ -167,11 +180,9 @@ const batal = () => {
           </svg>
         </div>
 
-        <!-- TEXT -->
-        <h2 class="text-lg font-semibold text-gray-700">
+        <h2 class="text-sm font-semibold text-gray-700">
           Data berhasil disimpan
         </h2>
-
       </div>
     </div>
   </adminLayout>

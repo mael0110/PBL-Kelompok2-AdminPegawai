@@ -78,21 +78,21 @@ const namaField = (field) => {
 
 <template>
 <adminLayout>
-  <h1 class="text-2xl font-bold">PRESENSI</h1>
-  <p class="flex text-sm gap-4 mb-6">Data Kehadiran Pegawai</p>
+  <h1 class="text-lg font-bold">PRESENSI</h1>
+  <p class="flex text-[11px] gap-4 mb-4">Data Kehadiran Pegawai</p>
 
-  <div class="flex gap-4 mb-6">
-    <div class="relative flex-1 text-sm">
-      <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400" :size="18"/>
+  <div class="flex gap-3 mb-4">
+    <div class="relative flex-1 text-[11px]">
+      <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400" :size="15"/>
       <input v-model="search" type="text"
         placeholder="Cari pegawai berdasarkan nama, NIP, atau NIK"
-        class="w-full border border-blue-900 text-sm rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-200"/>
+        class="w-full border border-blue-900 text-[11px] rounded-md pl-9 pr-4 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-200"/>
     </div>
 
     <div class="relative">
-      <Filter class="absolute left-3 top-1/2 -translate-y-1/2 text-white" :size="16"/>
+      <Filter class="absolute left-3 top-1/2 -translate-y-1/2 text-white" :size="14"/>
       <select v-model="filterStatus"
-        class="bg-blue-900 border border-blue-900 text-sm text-white pl-10 pr-8 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-200"
+        class="bg-blue-900 border border-blue-900 text-[11px] text-white pl-9 pr-8 py-1.5 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-200"
       >
         <option value="">Filter Status</option>
         <option value="hadir">Hadir</option>
@@ -104,73 +104,73 @@ const namaField = (field) => {
 
     <div class="relative">
       <input v-model="filterTanggal" type="date"
-        class="bg-blue-900 border border-blue-900 text-sm text-white pl-10 py-2 rounded-lg appearance-none [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-200"/>
+        class="bg-blue-900 border border-blue-900 text-[11px] text-white pl-9 py-1.5 rounded-md appearance-none [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-200"/>
     </div>
   </div>
 
-  <div class="grid grid-cols-4 gap-4 mb-6">
-    <div class="card-dashboard bg-green-100 rounded-xl shadow-md px-4 py-3 h-[100px] flex flex-col justify-center shadow border border-green-100">
-      <p class="text-center text-[16px] font-bold mb-2">HADIR</p>
-      <div class="relative flex items-center justify-center mb-2">
-        <UserCheck class="text-green-500 absolute left-2" :size="46"/>
-        <h2 class="text-3xl font-bold leading-none">{{ cardCounts.hadir }}</h2>
+  <div class="grid grid-cols-4 gap-3 mb-4">
+    <div class="card-dashboard bg-green-100 rounded-xl shadow-md px-4 py-2.5 h-[85px] flex flex-col justify-center shadow border border-green-100">
+      <p class="text-center text-[12px] font-bold mb-1">HADIR</p>
+      <div class="relative flex items-center justify-center mb-1">
+        <UserCheck class="text-green-500 absolute left-2" :size="32"/>
+        <h2 class="text-xl font-bold leading-none">{{ cardCounts.hadir }}</h2>
       </div>
-      <p class="text-center text-gray-700 text-[14px]">Total Hadir</p>
+      <p class="text-center text-gray-700 text-[11px]">Total Hadir</p>
     </div>
 
-    <div class="card-dashboard bg-yellow-100 rounded-xl shadow-md px-4 py-3 h-[100px] flex flex-col justify-center shadow border border-yellow-100">
-      <p class="text-center text-[16px] font-bold mb-2">IZIN</p>
-      <div class="relative flex items-center justify-center mb-2">
-        <UserRoundPlus class="text-yellow-500 absolute left-2" :size="46"/>
-        <h2 class="text-3xl font-bold leading-none">{{ cardCounts.izin }}</h2>
+    <div class="card-dashboard bg-yellow-100 rounded-xl shadow-md px-4 py-2.5 h-[85px] flex flex-col justify-center shadow border border-yellow-100">
+      <p class="text-center text-[12px] font-bold mb-1">IZIN</p>
+      <div class="relative flex items-center justify-center mb-1">
+        <UserRoundPlus class="text-yellow-500 absolute left-2" :size="32"/>
+        <h2 class="text-xl font-bold leading-none">{{ cardCounts.izin }}</h2>
       </div>
-      <p class="text-center text-gray-700 text-[14px]">Total Izin</p>
+      <p class="text-center text-gray-700 text-[11px]">Total Izin</p>
     </div>
 
-    <div class="card-dashboard bg-red-100 rounded-xl shadow-md px-4 py-3 h-[100px] flex flex-col justify-center shadow border border-red-100">
-      <p class="text-center text-[16px] font-bold mb-2">ALPA</p>
-      <div class="relative flex items-center justify-center mb-2">
-        <UserRoundPlus class="text-red-500 absolute left-2" :size="46"/>
-        <h2 class="text-3xl font-bold leading-none">{{ cardCounts.alpha }}</h2>
+    <div class="card-dashboard bg-red-100 rounded-xl shadow-md px-4 py-2.5 h-[85px] flex flex-col justify-center shadow border border-red-100">
+      <p class="text-center text-[12px] font-bold mb-1">ALPA</p>
+      <div class="relative flex items-center justify-center mb-1">
+        <UserRoundPlus class="text-red-500 absolute left-2" :size="32"/>
+        <h2 class="text-xl font-bold leading-none">{{ cardCounts.alpha }}</h2>
       </div>
-      <p class="text-center text-gray-700 text-[14px]">Total Alpa</p>
+      <p class="text-center text-gray-700 text-[11px]">Total Alpa</p>
     </div>
 
-    <div class="card-dashboard bg-blue-100 rounded-xl shadow-md px-4 py-3 h-[100px] flex flex-col justify-center shadow border border-blue-100">
-      <p class="text-center text-[16px] font-bold mb-2">SAKIT</p>
-      <div class="relative flex items-center justify-center mb-2">
-        <UserRoundPlus class="text-blue-500 absolute left-2" :size="46"/>
-        <h2 class="text-3xl font-bold leading-none">{{ cardCounts.sakit }}</h2>
+    <div class="card-dashboard bg-blue-100 rounded-xl shadow-md px-4 py-2.5 h-[85px] flex flex-col justify-center shadow border border-blue-100">
+      <p class="text-center text-[12px] font-bold mb-1">SAKIT</p>
+      <div class="relative flex items-center justify-center mb-1">
+        <UserRoundPlus class="text-blue-500 absolute left-2" :size="32"/>
+        <h2 class="text-xl font-bold leading-none">{{ cardCounts.sakit }}</h2>
       </div>
-      <p class="text-center text-gray-700 text-[14px]">Total Sakit</p>
+      <p class="text-center text-gray-700 text-[11px]">Total Sakit</p>
     </div>
   </div>
 
   <div class="bg-white rounded-xl shadow-md px-5">
-    <div class="px-2 py-3">
-      <h2 class="font-bold text-sm">DAFTAR PRESENSI</h2>
+    <div class="px-2 py-2.5">
+      <h2 class="font-bold text-[11px]">DAFTAR PRESENSI</h2>
     </div>
 
-    <table class="table-dashboard w-full text-sm">
+    <table class="table-dashboard w-full text-[11px]">
       <thead>
         <tr class="bg-blue-200 font-semibold border-b border-gray-200">
-          <th class="p-3 text-[12px]">NO</th>
-          <th class="p-3 text-left">NAMA PEGAWAI</th>
-          <th class="p-3 text-left">NIP</th>
-          <th class="p-3 text-left">TANGGAL</th>
-          <th class="p-3 text-left">STATUS</th>
+          <th class="p-2 text-[11px]">NO</th>
+          <th class="p-2 text-left">NAMA PEGAWAI</th>
+          <th class="p-2 text-left">NIP</th>
+          <th class="p-2 text-left">TANGGAL</th>
+          <th class="p-2 text-left">STATUS</th>
         </tr>
       </thead>
 
       <tbody>
         <tr v-for="(item, index) in filteredPresensi" :key="item.detail_id" class="odd:bg-gray-50 even:bg-white font-semibold border-b border-gray-200">
-          <td class="p-3 text-semibold text-center">{{ index + 1 }}</td>
-          <td class="p-3 text-semibold">{{ item.name || '-' }}</td>
-          <td class="p-3 text-semibold">{{ item.nip || '-' }}</td>
-          <td class="p-3 text-semibold">{{ item.sesi_created_at || '-' }}</td>
-          <td class="p-3 font-semibold text-left">
+          <td class="p-2 text-semibold text-center">{{ index + 1 }}</td>
+          <td class="p-2 text-semibold">{{ item.name || '-' }}</td>
+          <td class="p-2 text-semibold">{{ item.nip || '-' }}</td>
+          <td class="p-2 text-semibold">{{ item.sesi_created_at || '-' }}</td>
+          <td class="p-2 font-semibold text-left">
             <span
-              class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold"
+              class="w-[85px] inline-block text-center px-2 py-1 rounded-md text-[10px] font-semibold"
               :class="
                 item.status == 'hadir'
                 ? 'bg-green-100 text-green-700'
@@ -185,7 +185,7 @@ const namaField = (field) => {
       </tbody>
     </table>
 
-    <div v-if="meta && meta.total_pages > 1" class="flex justify-center gap-2 mt-4">
+    <div v-if="meta && meta.total_pages > 1" class="flex justify-center gap-1.5 mt-3 pb-3">
       <button
         v-for="page in meta.total_pages"
         :key="page"
@@ -193,7 +193,7 @@ const namaField = (field) => {
         :class="page === meta.page
           ? 'bg-blue-900 text-white'
           : 'bg-white text-blue-900 hover:bg-blue-100'"
-        class="px-3 py-1 rounded border text-sm"
+        class="px-2.5 py-0.5 rounded border text-[11px]"
       >
         {{ page }}
       </button>

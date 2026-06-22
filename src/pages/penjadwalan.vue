@@ -49,6 +49,20 @@ const form = reactive({
   end_time: "",
 });
 
+// --- STATE DAN FUNGSI UNTUK ALERT CUSTOM POP-UP DI ATAS ---
+const customAlert = ref({
+  show: false,
+  message: ""
+});
+
+const triggerAlert = (msg) => {
+  customAlert.value.message = msg;
+  customAlert.value.show = true;
+  setTimeout(() => {
+    customAlert.value.show = false;
+  }, 3000);
+};
+
 const buatJadwal = async () => {
   try {
     const payload = {
@@ -89,20 +103,18 @@ const buatJadwal = async () => {
 
   } catch (error) {
     console.log("Error generate:", error.response?.data || error);
-    alert("Gagal generate sesi kelas!");
+    triggerAlert("Gagal generate sesi kelas!");
   }
 };
 
 const simpanDosenPengampu = async () => {
-  // 🟢 PERBAIKAN: Mengubah formFormPengampu.mkkode menjadi formPengampu.mkkode agar lolos validasi if
   if (!formPengampu.dosen_id || !formPengampu.kelas_id || !formPengampu.mkkode) {
-    alert("Mohon lengkapi semua pilihan data pengampu!");
+    triggerAlert("Mohon lengkapi semua pilihan data pengampu!");
     return;
   }
   try {
     loadingPengampu.value = true;
     if (typeof createPengampu === "function") {
-      // 🟢 PERBAIKAN: Di sini juga dipastikan menggunakan formPengampu
       await createPengampu({
         dosen_id: formPengampu.dosen_id,
         kelas_id: formPengampu.kelas_id,
@@ -122,7 +134,7 @@ const simpanDosenPengampu = async () => {
     }
   } catch (error) {
     console.error(error);
-    alert("Gagal mendaftarkan dosen pengampu.");
+    triggerAlert("Gagal mendaftarkan dosen pengampu.");
   } finally {
     loadingPengampu.value = false;
   }
@@ -267,14 +279,14 @@ const konfirmasiHapus = async () => {
     const uuids = [selectedSesi.value.id]; 
     await deleteSesiKelas(uuids);
 
-    alert("Sesi kelas berhasil dihapus!");
+    triggerAlert("Sesi kelas berhasil dihapus!");
 
     daftarSesi.value = await getJadwal();
 
     showModal.value = false;
     selectedSesi.value = null;
   } catch (error) {
-    alert("Gagal menghapus sesi kelas!");
+    triggerAlert("Gagal menghapus sesi kelas!");
   }
 };
 
@@ -289,101 +301,106 @@ const formatProdi = (text) => {
 
 <template>
   <adminLayout>
-    <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-bold">
+    <div v-if="customAlert.show" class="fixed top-4 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-2 rounded-lg shadow-xl text-[11px] z-[9999] transition-all duration-300 font-medium">
+      {{ customAlert.message }}
+    </div>
+
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-base font-bold">
         PENJADWALAN SESI PERKULIAHAN
       </h2>
 
       <button
         @click="showModalPengampu = true"
         type="button"
-        class="flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded-lg font-semibold text-sm shadow transition-colors"
+        class="flex items-center gap-1.5 bg-blue-900 hover:bg-blue-800 text-white px-3 py-1.5 rounded-lg font-semibold text-[11px] shadow transition-colors"
       >
-        <UserPlus :size="16" />
+        <UserPlus :size="14" />
         Daftarkan Dosen Pengampu
       </button>
     </div>
 
-    <div class="card-dashboard bg-white rounded-xl shadow-md p-5">
-      <h2 class="font-bold text-xl mb-4">BUAT SESI</h2>
+    <div class="card-dashboard bg-white rounded-xl shadow-md p-4">
+      <h2 class="font-bold text-base mb-3">BUAT SESI</h2>
 
-      <form @submit.prevent="buatJadwal" class="grid grid-cols-2 gap-4">
+      <form @submit.prevent="buatJadwal" class="grid grid-cols-2 gap-3 text-[11px]">
         <div>
-          <label class="block text-sm font-semibold mb-1">Mata Kuliah</label>
-          <select v-model="form.course_code" @change="pilihMatkul" class="w-full border rounded-lg px-3 py-2">
+          <label class="block text-[11px] font-semibold mb-1">Mata Kuliah</label>
+          <select v-model="form.course_code" @change="pilihMatkul" class="w-full border rounded-lg px-2.5 py-1.5 text-[11px]">
             <option value="">Pilih Mata Kuliah</option>
             <option v-for="item in courses" :key="item.id" :value="item.code || item.kode">{{ item.name }}</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-sm font-semibold mb-1">Tanggal Mulai</label>
-          <input v-model="form.start_date" type="date" class="w-full border rounded-lg px-3 py-2"/>
+          <label class="block text-[11px] font-semibold mb-1">Tanggal Mulai</label>
+          <input v-model="form.start_date" type="date" class="w-full border rounded-lg px-2.5 py-1.5 text-[11px]"/>
         </div>
 
         <div>
-          <label class="block text-sm font-semibold mb-1">Prodi</label>
-          <select v-model="selectedProdi" @change="pilihProdi" class="w-full border rounded-lg px-3 py-2">
+          <label class="block text-[11px] font-semibold mb-1">Prodi</label>
+          <select v-model="selectedProdi" @change="pilihProdi" class="w-full border rounded-lg px-2.5 py-1.5 text-[11px]">
             <option value="">Pilih Prodi</option>
             <option v-for="item in prodiList" :key="item.id" :value="item.name">{{ formatProdi(item.name) }}</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-sm font-semibold mb-1">Jam Mulai</label>
-          <input v-model="form.start_time" type="time" class="w-full border rounded-lg px-3 py-2"/>
+          <label class="block text-[11px] font-semibold mb-1">Jam Mulai</label>
+          <input v-model="form.start_time" type="time" class="w-full border rounded-lg px-2.5 py-1.5 text-[11px]"/>
         </div>
 
         <div>
-          <label class="block text-sm font-semibold mb-1">Kelas</label>
-          <select v-model="form.class_id" @change="pilihKelas" class="w-full border rounded-lg px-3 py-2">
+          <label class="block text-[11px] font-semibold mb-1">Kelas</label>
+          <select v-model="form.class_id" @change="pilihKelas" class="w-full border rounded-lg px-2.5 py-1.5 text-[11px]">
             <option value="">Pilih Kelas</option>
             <option v-for="item in kelasList" :key="item.id" :value="item.id">{{ item.class_name || item.name || item.nama_kelas }}</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-sm font-semibold mb-1">Jam Selesai</label>
-          <input v-model="form.end_time" type="time" class="w-full border rounded-lg px-3 py-2"/>
+          <label class="block text-[11px] font-semibold mb-1">Jam Selesai</label>
+          <input v-model="form.end_time" type="time" class="w-full border rounded-lg px-2.5 py-1.5 text-[11px]"/>
         </div>
 
         <div>
-          <label class="block text-sm font-semibold mb-1">Dosen Pengampu</label>
-          <select v-model="form.pengampu_id" @change="pilihPengampu" class="w-full border rounded-lg px-3 py-2">
+          <label class="block text-[11px] font-semibold mb-1">Dosen Pengampu</label>
+          <select v-model="form.pengampu_id" @change="pilihPengampu" class="w-full border rounded-lg px-2.5 py-1.5 text-[11px]">
             <option value="">Pilih Dosen</option>
             <option v-for="item in pengampuList" :key="item.pengampu_id" :value="item.pengampu_id">{{ item.dosen && item.dosen.name ? item.dosen.name : "Nama dosen tidak ada" }}</option>
           </select>
         </div>
 
-        <div class="flex justify-end gap-4">
-          <button type="submit" class="flex h-[40px] items-center gap-2 bg-red-500 hover:bg-red-400 text-white px-6 py-2 rounded-lg font-semibold">
+        <div class="flex justify-end gap-3 items-end">
+          <button type="button" class="flex h-[32px] items-center gap-1.5 bg-red-500 hover:bg-red-400 text-white px-4 py-1.5 rounded-lg font-semibold text-[11px]">
             Batal
           </button>
 
-          <button type="submit" class="flex h-[40px] items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold">
-            <Save :size="18" />
+          <button type="submit" class="flex h-[32px] items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-lg font-semibold text-[11px]">
+            <Save :size="14" />
             Simpan
           </button>
         </div>
       </form>
     </div>
-    <div class="card-dashboard bg-white rounded-xl shadow-md p-5 mt-6">
-      <h2 class="text-xl font-bold mb-4">DAFTAR SESI</h2>
 
-      <div class="flex flex-wrap gap-3 mb-4">
+    <div class="card-dashboard bg-white rounded-xl shadow-md p-4 mt-4">
+      <h2 class="text-base font-bold mb-3">DAFTAR SESI</h2>
+
+      <div class="flex flex-wrap gap-2 mb-3 text-[11px]">
         <input
           v-model="searchSesi"
           type="text"
           placeholder="Cari mata kuliah, kelas, atau dosen..."
-          class="flex-1 border border-gray-300 rounded-lg px-4 py-2"
+          class="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-[11px]"
         />
 
-        <select v-model="filterMataKuliah" class="border rounded-lg px-4 py-2 w-52 text-white bg-blue-900">
+        <select v-model="filterMataKuliah" class="border rounded-lg px-3 py-1.5 w-44 text-white bg-blue-900">
           <option value="">Semua Mata Kuliah</option>
           <option value="Pemrograman Web">Pemrograman Web</option>
         </select>
 
-        <select v-model="filterKelas" class="border rounded-lg px-4 py-2 w-40 text-white bg-blue-900">
+        <select v-model="filterKelas" class="border rounded-lg px-3 py-1.5 w-36 text-white bg-blue-900">
           <option value="">Semua Kelas</option>
           <option value="TI-4A">TI-4A</option>
         </select>
@@ -391,64 +408,64 @@ const formatProdi = (text) => {
         <input
           v-model="filterTanggal"
           type="date"
-          class="border rounded-lg px-4 py-2 text-white bg-blue-900 items-white"
+          class="border rounded-lg px-3 py-1.5 text-white bg-blue-900 items-white"
         />
       </div>
 
-      <table class="table-dashboard w-full text-sm">
+      <table class="table-dashboard w-full text-[11px]">
         <thead>
           <tr class="bg-blue-200 text-left">
-            <th class="p-3">NO</th>
-            <th class="p-3">MATA KULIAH</th>
-            <th class="p-3">KELAS</th>
-            <th class="p-3">DOSEN</th>
-            <th class="p-3">PERTEMUAN</th>
-            <th class="p-3">TANGGAL</th>
-            <th class="p-3">JAM</th>
-            <th class="p-3">STATUS</th>
-            <th class="p-3 text-center">AKSI</th>
+            <th class="p-2">NO</th>
+            <th class="p-2">MATA KULIAH</th>
+            <th class="p-2">KELAS</th>
+            <th class="p-2">DOSEN</th>
+            <th class="p-2">PERTEMUAN</th>
+            <th class="p-2">TANGGAL</th>
+            <th class="p-2">JAM</th>
+            <th class="p-2">STATUS</th>
+            <th class="p-2 text-center">AKSI</th>
           </tr>
         </thead>
 
         <tbody>
           <tr v-for="(item, index) in filteredSesi" :key="item.id" class="hover:bg-gray-50 border-b border-gray-200">
-            <td class="p-3 font-semibold">{{ index + 1 }}</td>
-            <td class="p-3 font-semibold">{{ item.course_name }}</td>
-            <td class="p-3 font-semibold">{{ item.class_name }}</td>
-            <td class="p-3 font-semibold">{{ item.lecturer.employee_name || '-' }}</td>
-            <td class="p-3 font-semibold">PERTEMUAN {{ item.session_number }}</td>
-            <td class="p-3 font-semibold">{{ item.session_date }}</td>
-            <td class="p-3 font-semibold">{{ item.start_time }} - {{ item.end_time }}</td>
+            <td class="p-2 font-semibold">{{ index + 1 }}</td>
+            <td class="p-2 font-semibold">{{ item.course_name }}</td>
+            <td class="p-2 font-semibold">{{ item.class_name }}</td>
+            <td class="p-2 font-semibold">{{ item.lecturer.employee_name || '-' }}</td>
+            <td class="p-2 font-semibold">PERTEMUAN {{ item.session_number }}</td>
+            <td class="p-2 font-semibold">{{ item.session_date }}</td>
+            <td class="p-2 font-semibold">{{ item.start_time }} - {{ item.end_time }}</td>
 
-            <td class="p-3">
+            <td class="p-2">
               <span 
                 v-if="item.status === 'opened' || item.status === 'open'"
-                class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold bg-yellow-500 text-white"
+                class="w-[85px] inline-block text-center px-2 py-1 rounded-lg text-[11px] font-semibold bg-yellow-500 text-white"
               >
                 Berjalan
               </span>
               <span 
                 v-else-if="(item.status === 'closed' || item.status === 'close') && item.topic && item.topic !== '' && item.topic !== '-'"
-                class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold bg-green-600 text-white"
+                class="w-[85px] inline-block text-center px-2 py-1 rounded-lg text-[11px] font-semibold bg-green-600 text-white"
               >
                 Selesai
               </span>
               <span 
                 v-else
-                class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold bg-blue-900 text-white"
+                class="w-[85px] inline-block text-center px-2 py-1 rounded-lg text-[11px] font-semibold bg-blue-900 text-white"
               >
                 Terjadwal
               </span>
             </td>
 
-            <td class="p-3">
-              <div class="flex justify-center gap-3">
-                <button @click="bukaModalHapus(item)" class="bg-gray-200 hover:bg-gray-300 p-2 rounded-lg">
-                  <Trash2 class="text-red-500" :size="18" />
+            <td class="p-2">
+              <div class="flex justify-center gap-2">
+                <button @click="bukaModalHapus(item)" class="bg-gray-200 hover:bg-gray-300 p-1.5 rounded-lg">
+                  <Trash2 class="text-red-500" :size="14" />
                 </button>
 
-                <button @click="router.push(`/penjadwalan/edit/${item.id}`)" class="bg-gray-200 hover:bg-gray-300 p-2 rounded-lg">
-                  <Pencil class="text-yellow-500" :size="18" />
+                <button @click="router.push(`/penjadwalan/edit/${item.id}`)" class="bg-gray-200 hover:bg-gray-300 p-1.5 rounded-lg">
+                  <Pencil class="text-yellow-500" :size="14" />
                 </button>
               </div>
             </td>
@@ -457,13 +474,13 @@ const formatProdi = (text) => {
       </table>
     </div>
 
-    <div v-if="meta" class="flex justify-center gap-2 mt-4">
+    <div v-if="meta" class="flex justify-center gap-1.5 mt-3">
         <button
           v-for="link in meta.links"
           :key="link.label"
           :disabled="!link.url"
           @click="link.page && goPage(link.page)"
-          class="px-3 py-1 rounded border text-sm"
+          class="px-2 py-0.5 rounded border text-[11px]"
           :class="link.active
             ? 'bg-blue-900 text-white'
             : 'bg-white text-blue-900 hover:bg-blue-100'"
@@ -473,20 +490,20 @@ const formatProdi = (text) => {
     </div>
 
     <div v-if="showModalPengampu" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden border border-gray-100">
-        <div class="bg-blue-900 text-white px-5 py-4 flex justify-between items-center">
-          <h4 class="font-bold text-base flex items-center gap-2">
-            <UserPlus :size="18" /> Daftarkan Dosen Pengampu
+      <div class="bg-white w-full max-w-sm rounded-xl shadow-2xl overflow-hidden border border-gray-100">
+        <div class="bg-blue-900 text-white px-4 py-3 flex justify-between items-center">
+          <h4 class="font-bold text-xs flex items-center gap-1.5 text-[11px]">
+            <UserPlus :size="14" /> Daftarkan Dosen Pengampu
           </h4>
           <button @click="showModalPengampu = false" class="hover:bg-blue-800 p-1 rounded-lg text-white">
-            <X :size="20" />
+            <X :size="16" />
           </button>
         </div>
 
-        <form @submit.prevent="simpanDosenPengampu" class="p-5 space-y-4">
+        <form @submit.prevent="simpanDosenPengampu" class="p-4 space-y-3 text-[11px]">
           <div>
-            <label class="block text-xs font-bold text-gray-600 mb-1">PILIH DOSEN</label>
-            <select v-model="formPengampu.dosen_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+            <label class="block text-[10px] font-bold text-gray-600 mb-1">PILIH DOSEN</label>
+            <select v-model="formPengampu.dosen_id" class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-[11px] focus:outline-none">
               <option value="">-- Silahkan Pilih Dosen --</option>
               <option v-for="dsn in listDosenRaw" :key="dsn.id" :value="dsn.id">
                 {{ dsn.employee_name }}
@@ -495,8 +512,8 @@ const formatProdi = (text) => {
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-gray-600 mb-1">PILIH MATA KULIAH</label>
-            <select v-model="formPengampu.mkkode" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+            <label class="block text-[10px] font-bold text-gray-600 mb-1">PILIH MATA KULIAH</label>
+            <select v-model="formPengampu.mkkode" class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-[11px] focus:outline-none">
               <option value="">-- Silahkan Pilih Mata Kuliah --</option>
               <option v-for="crs in courses" :key="crs.id" :value="crs.code || crs.kode">
                 {{ crs.name }} ({{ crs.code || crs.kode }})
@@ -505,8 +522,8 @@ const formatProdi = (text) => {
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-gray-600 mb-1">PILIH KELAS</label>
-            <select v-model="formPengampu.kelas_id" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none">
+            <label class="block text-[10px] font-bold text-gray-600 mb-1">PILIH KELAS</label>
+            <select v-model="formPengampu.kelas_id" class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-[11px] focus:outline-none">
               <option value="">-- Silahkan Pilih Kelas --</option>
               <option v-for="kls in masterKelasModal" :key="kls.id" :value="kls.id">
                 {{ kls.class_name || kls.name || kls.nama_kelas }}
@@ -514,11 +531,11 @@ const formatProdi = (text) => {
             </select>
           </div>
 
-          <div class="flex justify-end gap-2 pt-3 border-t mt-5">
-            <button @click="showModalPengampu = false" type="button" class="bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+          <div class="flex justify-end gap-2 pt-2.5 border-t mt-4">
+            <button @click="showModalPengampu = false" type="button" class="bg-red-500 hover:bg-red-400 text-white px-3 py-1.5 rounded-lg font-semibold text-[11px]">
               Batal
             </button>
-            <button :disabled="loadingPengampu" type="submit" class="bg-green-600 hover:bg-green-500 text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:bg-gray-400">
+            <button :disabled="loadingPengampu" type="submit" class="bg-green-600 hover:bg-green-500 text-white px-4 py-1.5 rounded-lg font-semibold text-[11px] disabled:bg-gray-400">
               {{ loadingPengampu ? "Memproses..." : "Simpan" }}
             </button>
           </div>
@@ -527,35 +544,32 @@ const formatProdi = (text) => {
     </div>
 
     <div v-if="showModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="bg-white w-[420px] rounded-xl border-2 border-red-400 p-8 text-center shadow-2xl">
-        <div class="flex justify-center mb-5">
-          <TriangleAlert class="text-red-500" :size="80" stroke-width="2.5" />
+      <div class="bg-white w-[340px] rounded-xl border-2 border-red-400 p-6 text-center shadow-2xl">
+        <div class="flex justify-center mb-4">
+          <TriangleAlert class="text-red-500" :size="48" stroke-width="2.5" />
         </div>
 
-        <h2 class="text-2xl font-bold mb-6">Yakin Ingin Menghapus, <br>Jadwal Sesi ini</h2>
+        <h2 class="text-base font-bold mb-4">Yakin Ingin Menghapus, <br>Jadwal Sesi ini</h2>
 
         <div class="flex justify-center gap-3">
-          <button @click="konfirmasiHapus(item)" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg text-sm transition-colors">
+          <button @click="konfirmasiHapus(selectedSesi)" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-lg text-xs transition-colors">
             Yakin
           </button>
-          <button @click="tutupModal" class="bg-gray-700 hover:bg-gray-800 text-white px-5 py-2 rounded-lg text-sm transition-colors">
+          <button @click="tutupModal" class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-1.5 rounded-lg text-xs transition-colors">
             Kembali
           </button>
         </div>
       </div>
     </div>
 
-    <!-- SUCCESS MODAL -->
     <div
       v-if="showSuccessModal"
       class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
     >
-      <div class="bg-white w-[320px] rounded-xl shadow-lg p-6 text-center animate-fadeIn">
-
-        <!-- ICON CHECK -->
-        <div class="mx-auto w-[90px] h-[90px] flex items-center justify-center rounded-full border-4 border-green-500 mb-4">
+      <div class="bg-white w-[260px] rounded-xl shadow-lg p-5 text-center animate-fadeIn">
+        <div class="mx-auto w-[64px] h-[64px] flex items-center justify-center rounded-full border-4 border-green-500 mb-3">
           <svg
-            class="w-14 h-14 text-green-500"
+            class="w-10 h-10 text-green-500"
             fill="none"
             stroke="currentColor"
             stroke-width="3"
@@ -564,12 +578,9 @@ const formatProdi = (text) => {
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-
-        <!-- TEXT -->
-        <h2 class="text-lg font-semibold text-gray-700">
+        <h2 class="text-sm font-semibold text-gray-700">
           Data berhasil disimpan
         </h2>
-
       </div>
     </div>
   </adminLayout>

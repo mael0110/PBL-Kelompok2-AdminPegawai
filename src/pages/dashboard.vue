@@ -30,6 +30,20 @@ const showPresensiModal = ref(false);
 const statusPresensi = ref("");
 const todayKey = new Date().toISOString().split("T")[0];
 
+// --- STATE UTK ALERT CUSTOM ---
+const customAlert = ref({
+  show: false,
+  message: ""
+});
+
+const triggerAlert = (msg) => {
+  customAlert.value.message = msg;
+  customAlert.value.show = true;
+  setTimeout(() => {
+    customAlert.value.show = false;
+  }, 3000);
+};
+
 // Tanggal hari ini format Indonesia
 const today = new Date();
 const tanggalHariIni = today.toLocaleDateString("id-ID", {
@@ -91,6 +105,8 @@ const submitPresensi = async () => {
     }
   } catch (error) {
     console.error("Error submit presensi admin:", error);
+    // Custom pop-up alert pengganti alert browser default
+    triggerAlert("Gagal submit presensi admin");
   } finally {
     loadingPresensi.value = false;
   }
@@ -139,65 +155,69 @@ const namaField = (field) => {
 
 <template>
   <adminLayout>
-    <h1 class="text-2xl font-bold">DASHBOARD</h1>
+    <div v-if="customAlert.show" class="fixed top-4 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-4 py-1.5 rounded shadow-lg text-[11px] z-[9999] transition-all duration-300">
+      {{ customAlert.message }}
+    </div>
+
+    <h1 class="text-lg font-bold">DASHBOARD</h1>
     <div class="page-container">
       
-      <div class="grid grid-cols-4 gap-4 mb-6">
-        <div class="card-dashboard bg-blue-100 rounded-xl shadow px-4 py-3 h-[100px] flex flex-col justify-center border border-blue-100">
-          <p class="text-center text-[14px] font-bold mb-2">TOTAL PEGAWAI</p>
-          <div class="relative flex items-center justify-center mb-2">
-            <Users class="text-blue-500 absolute left-2" :size="38" />
-            <h2 class="text-3xl font-bold leading-none">{{ totalPegawai }}</h2>
+      <div class="grid grid-cols-4 gap-3 mb-4">
+        <div class="card-dashboard bg-blue-100 rounded-xl shadow px-3 py-2.5 h-[85px] flex flex-col justify-center border border-blue-100">
+          <p class="text-center text-[11px] font-bold mb-1">TOTAL PEGAWAI</p>
+          <div class="relative flex items-center justify-center mb-1">
+            <Users class="text-blue-500 absolute left-2" :size="26" />
+            <h2 class="text-xl font-bold leading-none">{{ totalPegawai }}</h2>
           </div>
-          <p class="text-center text-gray-700 text-[14px]">Data Pegawai Terdaftar</p>
+          <p class="text-center text-gray-700 text-[11px]">Data Pegawai Terdaftar</p>
         </div>
 
-        <div class="card-dashboard bg-yellow-100 rounded-xl shadow px-4 py-3 h-[100px] flex flex-col justify-center border border-yellow-100">
-          <p class="text-center text-[14px] font-bold mb-2">VERIFIKASI MENUNGGU</p>
-          <div class="relative flex items-center justify-center mb-2">
-            <Clock3 class="text-yellow-500 absolute left-2" :size="38" />
-            <h2 class="text-3xl font-bold leading-none">{{ totalPending }}</h2>
+        <div class="card-dashboard bg-yellow-100 rounded-xl shadow px-3 py-2.5 h-[85px] flex flex-col justify-center border border-yellow-100">
+          <p class="text-center text-[11px] font-bold mb-1">VERIFIKASI MENUNGGU</p>
+          <div class="relative flex items-center justify-center mb-1">
+            <Clock3 class="text-yellow-500 absolute left-2" :size="26" />
+            <h2 class="text-xl font-bold leading-none">{{ totalPending }}</h2>
           </div>
-          <p class="text-center text-gray-700 text-[14px]">Data Perlu Diverifikasi</p>
+          <p class="text-center text-gray-700 text-[11px]">Data Perlu Diverifikasi</p>
         </div>
 
-        <div class="card-dashboard bg-purple-100 rounded-xl shadow px-4 py-3 h-[100px] flex flex-col justify-center border border-purple-100">
-          <p class="text-center text-[14px] font-bold mb-2">LAPORAN MASUK</p>
-          <div class="relative flex items-center justify-center mb-2">
-            <FileText class="text-purple-500 absolute left-2" :size="38" />
-            <h2 class="text-3xl font-bold leading-none">{{ laporanMasuk }}</h2>
+        <div class="card-dashboard bg-purple-100 rounded-xl shadow px-3 py-2.5 h-[85px] flex flex-col justify-center border border-purple-100">
+          <p class="text-center text-[11px] font-bold mb-1">LAPORAN MASUK</p>
+          <div class="relative flex items-center justify-center mb-1">
+            <FileText class="text-purple-500 absolute left-2" :size="26" />
+            <h2 class="text-xl font-bold leading-none">{{ laporanMasuk }}</h2>
           </div>
-          <p class="text-center text-gray-700 text-[14px]">Pengajuan / Laporan Baru</p>
+          <p class="text-center text-gray-700 text-[11px]">Pengajuan / Laporan Baru</p>
         </div>
 
-        <div class="card-dashboard bg-green-100 rounded-xl shadow px-4 py-3 h-[100px] flex flex-col justify-center border border-green-100">
-          <p class="text-center text-[14px] font-bold mb-2">PRESENSI HARI INI</p>
-          <div class="relative flex items-center justify-center mb-2">
-            <UserCheck class="text-green-500 absolute left-2" :size="38" />
-            <h2 class="text-[24px] font-bold leading-none">{{ totalPresensiHadir }}</h2>
+        <div class="card-dashboard bg-green-100 rounded-xl shadow px-3 py-2.5 h-[85px] flex flex-col justify-center border border-green-100">
+          <p class="text-center text-[11px] font-bold mb-1">PRESENSI HARI INI</p>
+          <div class="relative flex items-center justify-center mb-1">
+            <UserCheck class="text-green-500 absolute left-2" :size="26" />
+            <h2 class="text-xl font-bold leading-none">{{ totalPresensiHadir }}</h2>
           </div>
-          <p class="text-center text-gray-700 text-[14px]">Pegawai Hadir Hari Ini</p>
+          <p class="text-center text-gray-700 text-[11px]">Pegawai Hadir Hari Ini</p>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="grid grid-cols-2 gap-3 mb-4">
         
-        <div class="card-dashboard bg-white rounded-xl h-[220px] shadow-md p-5 flex flex-col justify-between">
+        <div class="card-dashboard bg-white rounded-xl h-[190px] shadow-md p-4 flex flex-col justify-between">
           <div>
-            <p class="text-gray-400 text-[11px] mb-0.5">Presensi Kehadiran Admin Pegawai</p>
-            <p class="text-[13px] font-semibold text-gray-700">{{ tanggalHariIni }}</p>
+            <p class="text-gray-400 text-[10px] mb-0.5">Presensi Kehadiran Admin Pegawai</p>
+            <p class="text-[11px] font-semibold text-gray-700">{{ tanggalHariIni }}</p>
           </div>
           
-          <div class="flex justify-center my-1">
-            <div v-if="!sudahPresensi" class="w-[50px] h-[50px] bg-amber-500 rounded-full flex items-center justify-center shadow-inner">
-              <span class="text-white text-[26px] font-bold">!</span>
+          <div class="flex justify-center my-0.5">
+            <div v-if="!sudahPresensi" class="w-[38px] h-[38px] bg-amber-500 rounded-full flex items-center justify-center shadow-inner">
+              <span class="text-white text-[20px] font-bold">!</span>
             </div>
-            <div v-else class="w-[50px] h-[50px] bg-green-500 rounded-full flex items-center justify-center shadow-inner">
-              <span class="text-white text-[24px] font-bold">✓</span>
+            <div v-else class="w-[38px] h-[38px] bg-green-500 rounded-full flex items-center justify-center shadow-inner">
+              <span class="text-white text-[18px] font-bold">✓</span>
             </div>
           </div>
 
-          <p class="text-center text-[12px] font-semibold text-gray-700">
+          <p class="text-center text-[11px] font-semibold text-gray-700">
             {{ sudahPresensi ? "Anda sudah melakukan presensi hari ini" : "Anda belum melakukan presensi hari ini" }}
           </p>
           
@@ -205,53 +225,53 @@ const namaField = (field) => {
             <button
               @click="showPresensiModal = true"
               :disabled="sudahPresensi || loadingPresensi"
-              class="w-full bg-blue-900 text-white py-2 rounded-[6px] text-[12px] font-semibold disabled:bg-gray-300 disabled:text-gray-500 transition shadow-sm"
+              class="w-full bg-blue-900 text-white py-1.5 rounded-[5px] text-[11px] font-semibold disabled:bg-gray-300 disabled:text-gray-500 transition shadow-sm"
             >
               {{ loadingPresensi ? "Mengirim..." : "Klik Untuk Presensi Masuk" }}
             </button>
           </div>
         </div>
 
-        <div class="card-dashboard bg-white rounded-xl h-[220px] shadow-md p-5 flex flex-col justify-between">
-          <h2 class="font-bold text-sm mb-2">REKAP KESELURUHAN PRESENSI HARI INI</h2>
+        <div class="card-dashboard bg-white rounded-xl h-[190px] shadow-md p-4 flex flex-col justify-between">
+          <h2 class="font-bold text-[11px] mb-1">REKAP KESELURUHAN PRESENSI HARI INI</h2>
 
-          <div class="space-y-2.5 pb-1">
+          <div class="space-y-1.5 pb-0.5">
             <div
               v-for="item in presensiHariIni" 
               :key="item.label"
-              class="grid grid-cols-[60px_1fr_30px_30px] items-center gap-3 text-[13px]"
+              class="grid grid-cols-[50px_1fr_25px_25px] items-center gap-2 text-[11px]"
             >
               <span class="font-semibold">{{ item.label }}</span>
 
-              <div class="w-full bg-gray-200 rounded-full h-2">
+              <div class="w-full bg-gray-200 rounded-full h-1.5">
                 <div
-                  class="h-2 rounded-full transition-all duration-500"
+                  class="h-1.5 rounded-full transition-all duration-500"
                   :class="item.warna"
                   :style="{ width: item.persen + '%' }"
                 ></div>
               </div>
 
               <span class="text-right font-bold text-gray-700">{{ item.jumlah }}</span>
-              <span class="text-right text-gray-400">{{ item.persen }}%</span>
+              <span class="text-right text-gray-400 text-[10px]">{{ item.persen }}%</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="bg-white rounded-xl shadow-md px-5">
-        <div class="px-5 py-3">
-          <h2 class="font-bold text-sm">VERIFIKASI TERBARU</h2>
+      <div class="bg-white rounded-xl shadow-md px-4">
+        <div class="px-4 py-2">
+          <h2 class="font-bold text-[11px]">VERIFIKASI TERBARU</h2>
         </div>
 
-        <table class="w-full table-dashboard text-sm border-b border-gray-200">
+        <table class="w-full table-dashboard text-[11px] border-b border-gray-200">
           <thead>
             <tr class="bg-blue-200 font-semibold">
-              <th class="p-2 text-left">NO</th>
-              <th class="p-2 text-left">NAMA PEGAWAI</th>
-              <th class="p-2 text-left">FIELD DIUBAH</th>
-              <th class="p-2 text-left">DATA LAMA</th>
-              <th class="p-2 text-left">DATA BARU</th>
-              <th class="p-2 text-center">STATUS</th>
+              <th class="p-1.5 text-left">NO</th>
+              <th class="p-1.5 text-left">NAMA PEGAWAI</th>
+              <th class="p-1.5 text-left">FIELD DIUBAH</th>
+              <th class="p-1.5 text-left">DATA LAMA</th>
+              <th class="p-1.5 text-left">DATA BARU</th>
+              <th class="p-1.5 text-center">STATUS</th>
             </tr>
           </thead>
 
@@ -261,15 +281,15 @@ const namaField = (field) => {
               :key="item.id"
               class="hover:bg-gray-50 font-semibold border-b border-gray-300"
             >
-              <td class="p-3">{{ index + 1 }}</td>
-              <td class="p-3">{{ item.employee.employee_name }}</td>
-              <td class="p-3">{{ namaField(item.field_name) }}</td>
-              <td class="p-3">{{ item.old_value }}</td>
-              <td class="p-3">{{ item.new_value }}</td>
+              <td class="p-2">{{ index + 1 }}</td>
+              <td class="p-2">{{ item.employee.employee_name }}</td>
+              <td class="p-2">{{ namaField(item.field_name) }}</td>
+              <td class="p-2">{{ item.old_value }}</td>
+              <td class="p-2">{{ item.new_value }}</td>
 
-              <td class="p-3 text-center">
+              <td class="p-2 text-center">
                 <span
-                  class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold"
+                  class="w-[85px] inline-block text-center px-2 py-1 rounded-md text-[10px] font-semibold"
                   :class="{
                     'bg-green-100 text-green-500': item.status === 'approved',
                     'bg-red-100 text-red-500': item.status === 'rejected',
@@ -283,10 +303,10 @@ const namaField = (field) => {
           </tbody>
         </table>
 
-        <div class="text-center py-3">
+        <div class="text-center py-2">
           <RouterLink
             to="/verifikasi"
-            class="text-blue-900 text-[14px] font-bold hover:underline"
+            class="text-blue-900 text-[11px] font-bold hover:underline"
           >
             Lihat semua verifikasi &gt;
           </RouterLink>
@@ -295,11 +315,11 @@ const namaField = (field) => {
     </div>
 
     <div v-if="showPresensiModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div class="bg-white w-[300px] p-5 rounded-[10px] shadow-xl relative border border-gray-100">
-        <button class="absolute top-2 right-3 text-gray-400 hover:text-black text-[20px]" @click="showPresensiModal = false">×</button>
-        <h2 class="text-center font-bold text-[14px] text-gray-800 mb-3">Pilih Status Kehadiran</h2>
+      <div class="bg-white w-[260px] p-4 rounded-[8px] shadow-xl relative border border-gray-100">
+        <button class="absolute top-1.5 right-2 text-gray-400 hover:text-black text-[18px]" @click="showPresensiModal = false">×</button>
+        <h2 class="text-center font-bold text-[11px] text-gray-800 mb-2">Pilih Status Kehadiran</h2>
         
-        <select v-model="statusPresensi" class="w-full border border-gray-200 bg-white p-2 rounded-[6px] mb-4 text-[12px] outline-none focus:border-blue-900 text-gray-700">
+        <select v-model="statusPresensi" class="w-full border border-gray-200 bg-white p-1.5 rounded-[5px] mb-3 text-[11px] outline-none focus:border-blue-900 text-gray-700">
           <option disabled value="">-- Pilih Status --</option>
           <option value="hadir">Hadir (Masuk Kerja)</option>
           <option value="izin">Izin Resmi</option>
@@ -308,7 +328,7 @@ const namaField = (field) => {
         
         <button 
           @click="submitPresensi" 
-          class="w-full bg-blue-900 text-white py-2 rounded-[6px] text-[12px] font-bold disabled:bg-gray-300 shadow-sm" 
+          class="w-full bg-blue-900 text-white py-1.5 rounded-[5px] text-[11px] font-bold disabled:bg-gray-300 shadow-sm" 
           :disabled="!statusPresensi || loadingPresensi"
         >
           {{ loadingPresensi ? "Mengirim..." : "Kirim Data Presensi" }}
