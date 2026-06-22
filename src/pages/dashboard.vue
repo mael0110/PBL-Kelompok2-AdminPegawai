@@ -269,11 +269,11 @@ const namaField = (field) => {
 
               <td class="p-3 text-center">
                 <span
-                  class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold text-white"
+                  class="w-[110px] inline-block text-center px-4 py-2 rounded-lg text-[12px] font-semibold"
                   :class="{
-                    'bg-green-600': item.status === 'approved',
-                    'bg-red-500': item.status === 'rejected',
-                    'bg-yellow-500': item.status === 'pending'
+                    'bg-green-100 text-green-500': item.status === 'approved',
+                    'bg-red-100 text-red-500': item.status === 'rejected',
+                    'bg-yellow-100 text-yellow-500': item.status === 'pending'
                   }"
                 >
                   {{ namaField(item.status) }}
