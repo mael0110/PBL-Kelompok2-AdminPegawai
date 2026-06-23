@@ -8,6 +8,60 @@ export function presensiService() {
   const presensi = ref([]);
   const meta = ref(null);
 
+  // Helper untuk mendapatkan token & headers secara konsisten
+  const getHeaders = () => {
+    return {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Accept: "application/json",
+      },
+    };
+  };
+
+  // 1. GET STATUS PRESENSI WORKERS (BARU)
+  async function checkStatusPresensiHariIni() {
+    try {
+      const response = await axios.get(
+        "https://be.karlearn.site/api/workers/presensi/status",
+        getHeaders()
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error Get Status Presensi Workers:", error.response?.data || error);
+      throw error;
+    }
+  }
+
+  // 2. POST START PRESENSI WORKERS (BARU)
+  async function postPresensiStart() {
+    try {
+      const response = await axios.post(
+        "https://be.karlearn.site/api/workers/presensi/start",
+        {},
+        getHeaders()
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error Post Start Presensi Workers:", error.response?.data || error);
+      throw error;
+    }
+  }
+
+  // 3. POST STOP PRESENSI WORKERS (BARU)
+  async function postPresensiStop() {
+    try {
+      const response = await axios.post(
+        "https://be.karlearn.site/api/workers/presensi/stop",
+        {},
+        getHeaders()
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error Post Stop Presensi Workers:", error.response?.data || error);
+      throw error;
+    }
+  }
+
   async function getPresensi(page = 1, search = "") {
     try {
       const resPresensi = await axios.get("https://be.karlearn.site/api/presensi/pegawai", {
@@ -137,6 +191,9 @@ export function presensiService() {
     presensi,
     getPresensi,
     presensiDosen,
-    meta
+    checkStatusPresensiHariIni, 
+    postPresensiStart,        
+    postPresensiStop,         
+    meta,
   };
 }

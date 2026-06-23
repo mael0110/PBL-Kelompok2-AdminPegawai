@@ -1,14 +1,14 @@
 <script setup>
 import adminLayout from "./adminLayout.vue";
 import { ref, computed, onMounted } from "vue";
-import { Users, Clock3, FileText, UserCheck } from "lucide-vue-next";
+import { Users, Clock3, FileText, UserCheck, LogIn, LogOut } from "lucide-vue-next";
 import { employeesService } from "../services/pegawai";
 import { verifikasiService } from "../services/verifikasi";
 import { presensiService } from "../services/presensi";
 
 const { getEmployeeCount } = employeesService();
 const { verifikasi, getAllVerifikasi, getVerifikasiPending, getLaporanMasuk, getVerifikasiTerbaru } = verifikasiService();
-const { getPresensi, presensiDosen } = presensiService();
+const { getPresensi, checkStatusPresensiHariIni, postPresensiStart, postPresensiStop } = presensiService();
 
 // --- STATE DATA DASHBOARD ADMIN ---
 const totalPegawai = ref(0);
@@ -23,12 +23,9 @@ const presensiHariIni = ref([
   { label: "Alpha", jumlah: 0, persen: 0, warna: "bg-red-500" },
 ]);
 
-// --- STATE PRESENSI FITUR BARU (SAMA SEPERTI PEGAWAI) ---
+// --- STATE PRESENSI FITUR BARU (ONE-CLICK ACTION) ---
 const sudahPresensi = ref(false);
 const loadingPresensi = ref(false);
-const showPresensiModal = ref(false);
-const statusPresensi = ref("");
-const todayKey = new Date().toISOString().split("T")[0];
 
 // --- STATE UTK ALERT CUSTOM ---
 const customAlert = ref({
@@ -80,33 +77,72 @@ const fetchPresensiHariIni = async () => {
   }
 };
 
-const submitPresensi = async () => {
-  if (!statusPresensi.value) return;
-
-  loadingPresensi.value = true;
-
+// 🛠️ PERBAIKAN: Deteksi fleksibel isi data status dari backend
+const fetchStatusPresensiAdmin = async () => {
   try {
-    const payload = {
-      status: statusPresensi.value.trim().toLowerCase()
-    };
-
-    console.log("SEND PAYLOAD:", payload);
-
-    const res = await presensiDosen(payload);
-
-    if (res?.success || res) {
+    const res = await checkStatusPresensiHariIni();
+    console.log("LOG STATUS PRESENSI BACKEND:", res);
+    
+    // Mengecek berbagai kemungkinan format: res.is_active, res.data.is_active, atau kata "on"/"active"
+    const dataStatus = res?.data !== undefined ? res.data : res;
+    
+    if (
+      dataStatus === true || 
+      dataStatus?.is_active === true || 
+      dataStatus?.status === 'active' || 
+      dataStatus?.status === 'on' ||
+      dataStatus?.already_on === true
+    ) {
       sudahPresensi.value = true;
-      localStorage.setItem("presensi_dosen_hari_ini", todayKey);
-      showPresensiModal.value = false;
-      statusPresensi.value = "";
-
-      // 🟢 PERBAIKAN: Mengubah fungsi typo/tidak terdefinisi menjadi pemanggilan fungsi kalender yang benar
-      await fetchSesiKalender();
+    } else {
+      sudahPresensi.value = false;
     }
   } catch (error) {
-    console.error("Error submit presensi admin:", error);
-    // Custom pop-up alert pengganti alert browser default
-    triggerAlert("Gagal submit presensi admin");
+    console.error("Gagal memuat status presensi mandiri admin:", error);
+  }
+};
+
+// Fungsi aksi presensi masuk (Start)
+const handlePresensiStart = async () => {
+  loadingPresensi.value = true;
+  try {
+    const res = await postPresensiStart();
+    console.log("LOG START PRESENSI:", res);
+    
+    // 🟢 PAKSA UTK BERUBAH DI FRONTEND TANPA MENUNGGU SYNC LAINNYA
+    sudahPresensi.value = true; 
+    
+    triggerAlert("Presensi masuk berhasil dicatat!");
+    await fetchPresensiHariIni(); // Perbarui rekap grafik
+    await fetchStatusPresensiAdmin(); // Ambil ulang status resmi database
+  } catch (error) {
+    console.error("Error start presensi:", error);
+    // Jika backend bilang sudah on, paksa samakan tampilan frontend ke true
+    if (error.response?.data?.message?.toLowerCase().includes("already on") || error.response?.data?.includes("already on")) {
+      sudahPresensi.value = true;
+    }
+    triggerAlert(error.response?.data?.message || "Gagal melakukan presensi masuk");
+  } finally {
+    loadingPresensi.value = false;
+  }
+};
+
+// Fungsi aksi stop presensi (Stop/Keluar)
+const handlePresensiStop = async () => {
+  loadingPresensi.value = true;
+  try {
+    const res = await postPresensiStop();
+    console.log("LOG STOP PRESENSI:", res);
+    
+    // 🔴 PAKSA KEMBALI JADI FALSE DI FRONTEND
+    sudahPresensi.value = false;
+    
+    triggerAlert("Presensi keluar berhasil dicatat!");
+    await fetchPresensiHariIni(); // Perbarui rekap grafik
+    await fetchStatusPresensiAdmin(); // Ambil ulang status resmi database
+  } catch (error) {
+    console.error("Error stop presensi:", error);
+    triggerAlert(error.response?.data?.message || "Gagal menghentikan presensi");
   } finally {
     loadingPresensi.value = false;
   }
@@ -120,14 +156,9 @@ onMounted(async () => {
   verifikasiTerbaru.value = await getVerifikasiTerbaru();
   await getAllVerifikasi();
 
-  // Load Rekap List Presensi
+  // Load Rekap List Presensi & Status Absen Mandiri Admin
   await fetchPresensiHariIni();
-
-  // Cek Status Absen Mandiri Admin
-  const saved = localStorage.getItem("presensi_dosen_hari_ini");
-  if (saved === todayKey) {
-    sudahPresensi.value = true;
-  }
+  await fetchStatusPresensiAdmin();
 });
 
 const namaField = (field) => {
@@ -205,7 +236,7 @@ const namaField = (field) => {
         <div class="card-dashboard bg-white rounded-xl h-[190px] shadow-md p-4 flex flex-col justify-between">
           <div>
             <p class="text-gray-400 text-[10px] mb-0.5">Presensi Kehadiran Admin Pegawai</p>
-            <p class="text-[11px] font-semibold text-gray-700">{{ tanggalHariIni }}</p>
+            <p class="text-[11px] font-semibold">{{ tanggalHariIni }}</p>
           </div>
           
           <div class="flex justify-center my-0.5">
@@ -217,17 +248,30 @@ const namaField = (field) => {
             </div>
           </div>
 
-          <p class="text-center text-[11px] font-semibold text-gray-700">
+          <p class="text-center text-[11px] font-semibold">
             {{ sudahPresensi ? "Anda sudah melakukan presensi hari ini" : "Anda belum melakukan presensi hari ini" }}
           </p>
           
+          <!-- TOMBOL DINAMIS BERGANTI BERDASARKAN STATUS NYATA BACKEND -->
           <div class="flex justify-center">
             <button
-              @click="showPresensiModal = true"
-              :disabled="sudahPresensi || loadingPresensi"
-              class="w-full bg-blue-900 text-white py-1.5 rounded-[5px] text-[11px] font-semibold disabled:bg-gray-300 disabled:text-gray-500 transition shadow-sm"
+              v-if="!sudahPresensi"
+              @click="handlePresensiStart"
+              :disabled="loadingPresensi"
+              class="w-full flex items-center justify-center gap-1.5 bg-blue-900 hover:bg-blue-800 text-white py-1.5 rounded-[5px] text-[11px] font-semibold transition shadow-sm"
             >
+              <LogIn :size="13" />
               {{ loadingPresensi ? "Mengirim..." : "Klik Untuk Presensi Masuk" }}
+            </button>
+
+            <button
+              v-else
+              @click="handlePresensiStop"
+              :disabled="loadingPresensi"
+              class="w-full flex items-center justify-center gap-1.5 bg-red-500 hover:bg-red-600 text-white py-1.5 rounded-[5px] text-[11px] font-semibold transition shadow-sm"
+            >
+              <LogOut :size="13" />
+              {{ loadingPresensi ? "Mengirim..." : "Klik Untuk Stop Presensi" }}
             </button>
           </div>
         </div>
@@ -282,7 +326,7 @@ const namaField = (field) => {
               class="hover:bg-gray-50 font-semibold border-b border-gray-300"
             >
               <td class="p-2">{{ index + 1 }}</td>
-              <td class="p-2">{{ item.employee.employee_name }}</td>
+              <td class="p-2">{{ item.employee.employee_name || "Tidak Diketahui" }}</td>
               <td class="p-2">{{ namaField(item.field_name) }}</td>
               <td class="p-2">{{ item.old_value }}</td>
               <td class="p-2">{{ item.new_value }}</td>
@@ -311,28 +355,6 @@ const namaField = (field) => {
             Lihat semua verifikasi &gt;
           </RouterLink>
         </div>
-      </div>
-    </div>
-
-    <div v-if="showPresensiModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div class="bg-white w-[260px] p-4 rounded-[8px] shadow-xl relative border border-gray-100">
-        <button class="absolute top-1.5 right-2 text-gray-400 hover:text-black text-[18px]" @click="showPresensiModal = false">×</button>
-        <h2 class="text-center font-bold text-[11px] text-gray-800 mb-2">Pilih Status Kehadiran</h2>
-        
-        <select v-model="statusPresensi" class="w-full border border-gray-200 bg-white p-1.5 rounded-[5px] mb-3 text-[11px] outline-none focus:border-blue-900 text-gray-700">
-          <option disabled value="">-- Pilih Status --</option>
-          <option value="hadir">Hadir (Masuk Kerja)</option>
-          <option value="izin">Izin Resmi</option>
-          <option value="sakit">Sakit</option>
-        </select>
-        
-        <button 
-          @click="submitPresensi" 
-          class="w-full bg-blue-900 text-white py-1.5 rounded-[5px] text-[11px] font-bold disabled:bg-gray-300 shadow-sm" 
-          :disabled="!statusPresensi || loadingPresensi"
-        >
-          {{ loadingPresensi ? "Mengirim..." : "Kirim Data Presensi" }}
-        </button>
       </div>
     </div>
   </adminLayout>
