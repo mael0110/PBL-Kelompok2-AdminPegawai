@@ -159,7 +159,11 @@ const simpanPegawai = async () => {
     const lastPage = meta.value?.last_page || 1;
     router.push({ path: "/pegawai", query: { page: lastPage } });
   } catch (error) {
-    console.log(error);
+    console.log("Error detail:", error.response?.data);
+    
+    // Mengambil pesan error spesifik dari backend jika ada
+    const pesanGagal = error.response?.data?.message || "Gagal menyimpan! Periksa validasi data.";
+    triggerAlert(pesanGagal);
   }
 };
 

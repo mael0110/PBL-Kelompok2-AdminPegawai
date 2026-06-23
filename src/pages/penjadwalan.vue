@@ -129,6 +129,12 @@ const simpanDosenPengampu = async () => {
     formPengampu.mkkode = "";
     showModalPengampu.value = false;
 
+    setTimeout(async () => {
+      showSuccessModal.value = false;
+
+    }, 2000);
+
+
     if (form.class_id) {
       pengampuList.value = await getPengampuByKelas(form.class_id);
     }
@@ -139,11 +145,6 @@ const simpanDosenPengampu = async () => {
     loadingPengampu.value = false;
   }
 };
-
-setTimeout(async () => {
-  showSuccessModal.value = false;
-
-}, 2000);
 
 onMounted(async () => {
   courses.value = await getCourses();
